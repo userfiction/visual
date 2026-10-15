@@ -1,0 +1,28 @@
+// ============================================================================
+// .gitignore — build artifacts, dependency and cache dirs never get pushed
+// (mirrors the sibling @userfiction/inventory repo's .gitignore, with the
+// demo/dist entry renamed to ui/dist for this package's UI folder)
+// ============================================================================
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+ui/dist/
+coverage/
+*.tsbuildinfo
+
+# Tooling caches
+.turbo/
+.eslintcache
+.vite/
+
+# Package-manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS junk
+.DS_Store
+Thumbs.db

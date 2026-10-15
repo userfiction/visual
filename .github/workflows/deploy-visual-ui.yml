@@ -1,0 +1,87 @@
+# ============================================================================
+# deploy-visual-ui.yml — build and publish the @userfiction/visual UI showcase
+# to GitHub Pages
+# ============================================================================
+# This workflow lives in the visual repo (packages/userfiction/visual of the
+# noobscript workspace is a standalone repo:
+# git@github.com:userfiction/visual). GitHub Actions only reads
+# .github/workflows/ from the repo root, so the file must sit here — not at
+# the noobscript workspace root.
+#
+# SCOPE: the UI showcase (ui/) is NOT part of the npm package
+# (@userfiction/visual ships the icon library — src/ + built dist/ — and ui/
+# is excluded from package.json "files" and tsconfig.build.json). This
+# workflow ONLY builds and publishes the UI; publishing to npm happens
+# separately via the package's `release` script (scripts/publish-safe.ts).
+#
+# Trigger: every push to `main` (plus manual dispatch). The UI is a pure
+# static Vite app (ui/index.html + ui/main.ts) — built with the package's own
+# `ui:build` script and published via the official Pages actions (upload
+# artifact → deploy), the same flow @userfiction/combat and
+# @userfiction/inventory use for their demos.
+#
+# Requires one-time repo setup: Settings → Pages → Source = "GitHub Actions".
+#
+# Base path: project Pages serves this repo under
+# https://userfiction.github.io/visual/, so the build must use --base=/visual/
+# (Vite CLI overrides ui/vite.config.ts) or every asset/script URL 404s on
+# Pages.
+#
+# Toolchain: Node 22 (Vite 8 engines: ^20.19 || >=22.12). Yarn 1 comes
+# preinstalled on the runners (this repo pins no packageManager). The repo has
+# no yarn.lock of its own yet, so the install is plain — no --frozen-lockfile —
+# and setup-node caching is disabled (it requires a lockfile to hash).
+# ----------------------------------------------------------------------------
+name: Deploy visual UI
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+# One Pages deployment at a time; a newer push replaces an in-flight one
+concurrency:
+    group: pages
+    cancel-in-progress: true
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Install dependencies
+              run: yarn install
+
+            # The UI imports the library via relative ../src imports, so no
+            # library build is needed first — ui:build is self-contained.
+            # --base overrides ui/vite.config.ts for the Pages subpath.
+            - name: Build visual UI
+              run: yarn run ui:build --base=/visual/
+
+            - name: Upload Pages artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  path: ui/dist
+
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4

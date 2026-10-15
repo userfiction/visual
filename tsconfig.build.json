@@ -1,0 +1,25 @@
+{
+    // Declaration-emit config for the npm build (`tsc -p tsconfig.build.json`).
+    // Extends the package tsconfig (which is self-contained — see its header)
+    // but:
+    // - emits ONLY .d.ts into dist/ (JS comes from `vite build`, same split as
+    //   @userfiction/combat / @userfiction/inventory / @userfiction/reader);
+    // - excludes every test file: plain "**/*.test.ts" exclusion alone would
+    //   let `.test.tsx` files emit d.ts files importing vitest /
+    //   @testing-library — broken declaration references for npm consumers;
+    // - excludes vite.config.ts so the root library config never lands in
+    //   dist;
+    // - excludes ui/: the "vite.config.ts" pattern above matches ONLY the
+    //   root-level config, so without "ui" tsc would emit declarations for
+    //   ui/vite.config.ts and every UI source into dist/ and break the npm
+    //   build's publish surface (the UI is showcase app code, never a library
+    //   export — the UI is also excluded from the package.json "files" list).
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "emitDeclarationOnly": true,
+        "declaration": true,
+        "rootDir": ".",
+        "outDir": "dist"
+    },
+    "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx", "vite.config.ts", "ui"]
+}

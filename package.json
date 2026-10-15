@@ -1,0 +1,59 @@
+{
+    "name": "@userfiction/visual",
+    "version": "1.0.2",
+    "description": "Visual assets for User Fiction — flat-design SVG icons (generic + fantasy sets), string and React layers",
+    "type": "module",
+    "main": "./dist/userfiction-visual.mjs",
+    "module": "./dist/userfiction-visual.mjs",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "development": "./index.ts",
+            "import": "./dist/userfiction-visual.mjs"
+        }
+    },
+    "files": [
+        "dist",
+        "index.ts",
+        "**/*.ts",
+        "**/*.tsx",
+        "!**/*.test.ts",
+        "!**/*.test.tsx",
+        "!vite.config.ts",
+        "!ui"
+    ],
+    "sideEffects": false,
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org"
+    },
+    "scripts": {
+        "build": "vite build && tsc -p tsconfig.build.json",
+        "prepack": "npm run build",
+        "test": "vitest run",
+        "typecheck": "tsc --noEmit",
+        "ui:dev": "vite --config ui/vite.config.ts",
+        "ui:build": "vite build --config ui/vite.config.ts",
+        "ui:preview": "vite preview --config ui/vite.config.ts",
+        "release": "vite-node ../../../scripts/publish-safe.ts"
+    },
+    "dependencies": {
+        "@presource/core": "*"
+    },
+    "peerDependencies": {
+        "react": "^18.2.0"
+    },
+    "devDependencies": {
+        "@types/node": "^25.9.1",
+        "@types/react": "^18.2.0",
+        "@types/react-dom": "^18.2.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "typescript": "^6.0.0",
+        "vite": "^8.0.8",
+        "vitest": "^4.1.4"
+    },
+    "author": "NQQT",
+    "license": "ISC"
+}

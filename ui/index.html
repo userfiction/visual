@@ -1,0 +1,46 @@
+<!doctype html>
+<!-- ============================================================================
+     ui/index.html — single-page shell for the @userfiction/visual UI showcase
+     (the icon gallery).
+
+     Vanilla HTML/CSS/TS only: no React, no backend, no fetch. The gallery's
+     DOM is BUILT by main.ts into the mount point below, so the script owns
+     the markup and the shell stays a stable skeleton.
+
+     This UI is a SHOWCASE ONLY — it is not part of the npm package
+     (@userfiction/visual ships the library: src/ + dist/). It is built and
+     deployed to GitHub Pages by .github/workflows/deploy-visual-ui.yml.
+============================================================================ -->
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>@userfiction/visual — icon gallery</title>
+        <link rel="stylesheet" href="./styles.css" />
+    </head>
+    <body>
+        <header class="top">
+            <h1>@userfiction/visual</h1>
+            <p class="subtitle">
+                Flat-design SVG icons for User Fiction — solid fills, currentColor, one shared 24&times;24 grid.
+                Click a card to copy the standalone SVG markup.
+            </p>
+            <!-- size-toolbar and count are mounted by main.ts -->
+            <div id="toolbar-mount"></div>
+        </header>
+
+        <!-- gallery.ts mount: one card per built-in icon -->
+        <main id="gallery-mount" class="gallery" aria-label="Icon gallery"></main>
+
+        <footer class="bottom">
+            <p>
+                Showcase only — the published npm package contains the library (icons + registry), not this UI.
+            </p>
+        </footer>
+
+        <!-- copy feedback toast (main.ts toggles .visible) -->
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+        <script type="module" src="./main.ts"></script>
+    </body>
+</html>
