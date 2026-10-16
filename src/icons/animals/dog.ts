@@ -1,14 +1,19 @@
 /**
- * dog — ANIMALS icon: dog face with DROOPING ears, inner-ear detail and a
- * T-shaped mouth under the nose.
+ * dog — ANIMALS icon: round dog head with drooping ear lobes hugging the
+ * skull, muzzle patch with dark nose/mouth re-fills, round eyes.
  *
- * GEOMETRY: head = circle r 6.8 at (12,12.6) drawn CLOCKWISE; floppy ears =
- * rounded-bottom rect paths hanging at the head's sides (x 2.6..7.2 and
- * 16.8..21.4, y 6.4..17.6), each with a thin inner-ear hole kept fully
- * clear of the head circle (hole x ≤ 4.8 / ≥ 19.2; head edge x ≥ 5.4 /
- * ≤ 18.6 at every hole y — verified against the circle equation); eyes
- * r 1.05, the apex-down nose and the two mouth lines are COUNTERCLOCKWISE
- * holes inside the head only.
+ * ANATOMY: head = circle r 5.8 at (12,12.8); the drooping ears are a SECOND
+ * evenodd element whose lobes start INSIDE the head outline (roots overlap
+ * the circle → one glued mass, no seam); each lobe carries a thin inner-ear
+ * slot kept clear of the head circle; the muzzle is a light ellipse hole
+ * with the apex-down nose + philtrum bar re-filling it dark at evenodd
+ * depth 3 (dark features inside a light muzzle patch — reads as the breed
+ * mask at 24px).
+ *
+ * GEOMETRY vs svg-icon/IconBase (../svg-icon.ts, ../react.tsx): head+face
+ * element and ears element are separate <path fill-rule="evenodd"> elements
+ * (cross-element overlap = union); flatPath/IconBase supply the flat shell
+ * attributes (see the cat.ts header for the full pipeline description).
  */
 import React from 'react';
 import { createSvgIcon, flatPath } from '../svg-icon';
@@ -16,24 +21,50 @@ import type { SvgIconFactory } from '../svg-icon';
 import { IconBase } from '../react';
 import type { IconProps } from '../react';
 
-export const ICON_DOG = flatPath(
-    // floppy ears (solid, rounded bottoms via sweep-1 arc)
-    'M2.6 6.4h4.6v8.9a2.3 2.3 0 0 1 -4.6 0z' +
-        // inner-ear holes (thin verticals, clear of the head circle)
-        'M3.3 7.6v6.6h1.5v-6.6z' +
-        'M16.8 6.4h4.6v8.9a2.3 2.3 0 0 1 -4.6 0z' +
-        'M19.2 7.6v6.6h1.5v-6.6z' +
-        // head circle, clockwise
-        'M5.2 12.6a6.8 6.8 0 1 1 13.6 0a6.8 6.8 0 1 1 -13.6 0z' +
-        // eye holes, counterclockwise
-        'M8.35 10.4a1.05 1.05 0 1 0 2.1 0a1.05 1.05 0 1 0 -2.1 0z' +
-        'M13.55 10.4a1.05 1.05 0 1 0 2.1 0a1.05 1.05 0 1 0 -2.1 0z' +
-        // nose hole, counterclockwise
-        'M10.8 13.6l1.2 1.8L13.2 13.6z' +
-        // mouth: vertical stem + horizontal bar (both v-first holes)
-        'M11.7 15.9v1.6h0.6v-1.6z' +
-        'M10.5 17.7v0.6h3v-0.6z'
-);
+const EVENODD = 'fill="currentColor" stroke="none" fill-rule="evenodd"';
+
+// Head (depth 1) + eye holes + light muzzle patch (depth 2, transparent)
+// with the dark nose + mouth bar re-filling it (depth 3 → filled again).
+const DOG_FACE =
+    // head circle, clockwise
+    'M6.2 12.8a5.8 5.8 0 1 1 11.6 0a5.8 5.8 0 1 1 -11.6 0z' +
+    // eye holes
+    'M7.8 10.8a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0z' +
+    'M14 10.8a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0z' +
+    // muzzle patch hole (light area)
+    'M9.3 16a2.7 2.1 0 1 0 5.4 0a2.7 2.1 0 1 0 -5.4 0z' +
+    // nose hole (depth 3 → solid dark inside the patch)
+    'M10.9 14.9L13.1 14.9 12 16.4z' +
+    // mouth line hole (depth 3 → solid dark)
+    'M11.7 16.7v1.1h0.6v-1.1z';
+
+// Drooping ears: lobes rooted INSIDE the head outline (union across
+// elements), inner-ear slots clear of the head circle.
+const DOG_EARS =
+    // left ear: root tucked inside the head, lobe drooping outside it
+    'M10.6 8.2' +
+    'Q8.4 6.8 6 7.6' + // root top → outer edge toward the skull
+    'Q3.6 8.6 2.8 11.4' + // outer edge bulging left
+    'Q2.2 14.4 4 16.6' + // outer edge down to the lobe bottom
+    'Q5.6 18.2 7.4 17.2' + // rounded bottom cap
+    'Q8.8 16.2 9.2 13.4' + // inner edge rising
+    'Q9.6 10.6 10.6 8.2' + // inner edge back to the root
+    'z' +
+    // inner-ear slot (kept clear of the head circle)
+    'M4.2 10.2v5h1.4v-5z' +
+    // right ear (mirror)
+    'M13.4 8.2' +
+    'Q15.6 6.8 18 7.6' +
+    'Q20.4 8.6 21.2 11.4' +
+    'Q21.8 14.4 20 16.6' +
+    'Q18.4 18.2 16.6 17.2' +
+    'Q15.2 16.2 14.8 13.4' +
+    'Q14.4 10.6 13.4 8.2' +
+    'z' +
+    'M18.4 10.2v5h1.4v-5z';
+
+export const ICON_DOG =
+    `<path d="${DOG_FACE}" ${EVENODD}/>` + `<path d="${DOG_EARS}" ${EVENODD}/>`;
 
 // String layer: registers 'dog' in the shared registry + bound factory
 export const svgDog: SvgIconFactory = createSvgIcon('dog', ICON_DOG);

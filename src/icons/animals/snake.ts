@@ -1,14 +1,11 @@
 /**
- * snake — ANIMALS icon: thick S-shaped snake with spots, forked tongue and
- * eye.
+ * snake — ANIMALS icon: thick S-ribbon body with three spots, ovoid blunt-
+ * snouted head, round eye and a two-bar forked tongue.
  *
- * GEOMETRY: body = union of TWO identical S ribbons (2.6 thick) offset
- * vertically by 0.6 — the union is a pinch-free 3.2-thick S (a single
- * thicker ribbon would self-intersect where its mirrored bottom edge rises
- * past the top edge); three round spot holes r 0.55 ride the union's local
- * center line; head = solid circle r 2.5 at (19.6,13.8) overlapping the
- * ribbon's right end with a COUNTERCLOCKWISE eye hole r 0.8; forked
- * tongue = two thin solid bars ahead of the snout (within the 24 grid).
+ * GEOMETRY: ribbon (+spot holes) and head (+eye hole) are two evenodd elements —
+ * the head overlaps the ribbon's right end ACROSS elements (union, no same-
+ * element XOR); tongue is a flatPath solid overlay (see svg-icon.ts
+ * flatPath + react.tsx IconBase for the shell pipeline).
  */
 import React from 'react';
 import { createSvgIcon, flatPath } from '../svg-icon';
@@ -16,30 +13,45 @@ import type { SvgIconFactory } from '../svg-icon';
 import { IconBase } from '../react';
 import type { IconProps } from '../react';
 
-// One S ribbon (2.6 thick): top edge right (rising then dipping), end cap
-// down, mirrored bottom edge back
-const RIBBON_A = 'M2 12.2c2.6-2.6 5.4-2.6 8 0s5.4 2.6 8 0v2.6c-2.6 2.6-5.4 2.6-8 0s-5.4-2.6-8 0z';
-// Same ribbon shifted 0.6 down — the union reads as one thick S
-const RIBBON_B = 'M2 12.8c2.6-2.6 5.4-2.6 8 0s5.4 2.6 8 0v2.6c-2.6 2.6-5.4 2.6-8 0s-5.4-2.6-8 0z';
+const EVENODD = 'fill="currentColor" stroke="none" fill-rule="evenodd"';
 
-export const ICON_SNAKE = flatPath(
-    RIBBON_A +
-        RIBBON_B +
-        // spot holes, counterclockwise (on the union's local center line)
-        'M4.05 12.5a0.55 0.55 0 1 0 1.1 0a0.55 0.55 0 1 0 -1.1 0z' +
-        'M8.95 13.7a0.55 0.55 0 1 0 1.1 0a0.55 0.55 0 1 0 -1.1 0z' +
-        'M13.95 15a0.55 0.55 0 1 0 1.1 0a0.55 0.55 0 1 0 -1.1 0z' +
-        // head circle, clockwise (overlaps the ribbon's right end)
-        'M17.1 13.8a2.5 2.5 0 1 1 5 0a2.5 2.5 0 1 1 -5 0z' +
-        // eye hole, counterclockwise
-        'M19.7 13a0.8 0.8 0 1 0 1.6 0a0.8 0.8 0 1 0 -1.6 0z' +
-        // forked tongue (solid thin bars ahead of the snout)
-        'M22.2 13.2h1.5v0.5h-1.5zM22.2 14h1.5v0.5h-1.5z'
-);
+// Body ribbon: one smooth S from tail (left) to neck (right).
+const SNAKE_RIBBON =
+    'M1.6 10.8' +
+    'C4.4 7.2 7.6 7.2 10.2 10.4' + // top edge: rise then dip
+    'C12.8 13.6 16 13.6 18.8 10.8' + // continue the S
+    'L18.8 14.4' + // right end cap down
+    'C16 17.2 12.8 17.2 10.2 14' + // bottom edge back
+    'C7.6 10.8 4.4 10.8 1.6 14.4' + // mirrored S
+    'z';
 
-// String layer: registers 'snake' in the shared registry + bound factory
+// Head: ovoid with blunt snout (overlaps the ribbon across elements).
+const SNAKE_HEAD =
+    'M16.8 9.9' +
+    'Q21 9 22.2 11' +
+    'Q22.6 12 21.9 13.2' +
+    'Q20.3 15.3 16.8 14.4' +
+    'z' +
+    // eye hole (inside the head only)
+    'M19.4 11.3a0.85 0.85 0 1 0 1.7 0a0.85 0.85 0 1 0 -1.7 0z';
+
+// Spots riding the ribbon band.
+const SNAKE_SPOTS =
+    'M3.8 12.2a0.55 0.55 0 1 0 1.1 0a0.55 0.55 0 1 0 -1.1 0z' +
+    'M8.2 10.7a0.55 0.55 0 1 0 1.1 0a0.55 0.55 0 1 0 -1.1 0z' +
+    'M13.6 14.9a0.55 0.55 0 1 0 1.1 0a0.55 0.55 0 1 0 -1.1 0z';
+
+export const ICON_SNAKE =
+    // Spots cut the ribbon in its own paint operation, never as opaque
+    // circles painted over an already filled ribbon.
+    `<path d="${SNAKE_RIBBON + SNAKE_SPOTS}" ${EVENODD}/>` +
+    `<path d="${SNAKE_HEAD}" ${EVENODD}/>` +
+    flatPath(
+        // forked tongue: two thin bars ahead of the snout
+        'M22.2 11.8L23.5 10.6 23.7 10.9 22.5 12.1z' +
+            'M22.3 12.2L23.7 13.3 23.5 13.6 22.2 12.5z'
+    );
+
 export const svgSnake: SvgIconFactory = createSvgIcon('snake', ICON_SNAKE);
-
-// React layer: same geometry through the shared flat shell
 export const SnakeIcon = (props: IconProps) =>
     React.createElement(IconBase, { name: 'snake', content: ICON_SNAKE, ...props });

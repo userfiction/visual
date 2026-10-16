@@ -1,13 +1,13 @@
 /**
- * fox — ANIMALS icon: fox head with tall ears, inner-ear detail, narrow
- * chin and nose.
+ * fox — ANIMALS icon: fox head with tall ears (inner-ear holes), wide brow,
+ * pointed chin and cheek spikes, eyes and apex-down nose.
  *
- * GEOMETRY: head = diamond-ish path (cheek corners (4.2,10.6)/(19.8,10.6),
- * chin at (12,21.6), Q-rounded brow corners) drawn CLOCKWISE; tall solid
- * ear triangles rise from the brows, each with a COUNTERCLOCKWISE
- * inner-ear hole near the tip — kept fully ABOVE the head's brow curve so
- * the holes cut only the ears; eye holes r 0.9 and the apex-down nose hole
- * cut COUNTERCLOCKWISE inside the head.
+ * GEOMETRY: ears (disjoint triangles + inner-ear holes) and head (wide
+ * brow → cheek spikes → jaw, WITH the eye/nose holes in the same paint
+ * operation) are separate evenodd elements — the ear bases overlap the
+ * head ACROSS elements (union, no same-element XOR); the chin wedge is a
+ * flatPath solid overlay completing the V jaw (see svg-icon.ts flatPath
+ * + react.tsx IconBase for the shell pipeline).
  */
 import React from 'react';
 import { createSvgIcon, flatPath } from '../svg-icon';
@@ -15,26 +15,43 @@ import type { SvgIconFactory } from '../svg-icon';
 import { IconBase } from '../react';
 import type { IconProps } from '../react';
 
-export const ICON_FOX = flatPath(
-    // ears (solid tall triangles; the right ear's vertex order is reversed
-    // to keep the same solid chirality after mirroring)
-    'M4.2 2.6L9.4 6.4 5.2 8.6z' +
-        // inner-ear holes near the tips (reversed winding, above the brow)
-        'M5.4 3.9L5.7 5.9 6.9 4.9z' +
-        'M19.8 2.6L18.8 8.6 14.6 6.4z' +
-        'M18.6 3.9L17.1 4.9 18.3 5.9z' +
-        // head (chin → left cheek → brows → right cheek → close), clockwise
-        'M12 21.6L4.2 10.6Q3.6 7.4 6.2 5.8Q9 4.2 12 5.8Q15 4.2 17.8 5.8Q20.4 7.4 19.8 10.6z' +
-        // eye holes, counterclockwise
-        'M8.3 11.2a0.9 0.9 0 1 0 1.8 0a0.9 0.9 0 1 0 -1.8 0z' +
-        'M13.9 11.2a0.9 0.9 0 1 0 1.8 0a0.9 0.9 0 1 0 -1.8 0z' +
-        // nose hole, counterclockwise (apex-down)
-        'M11.1 13.6l0.9 1.5 0.9-1.5z'
-);
+const EVENODD = 'fill="currentColor" stroke="none" fill-rule="evenodd"';
 
-// String layer: registers 'fox' in the shared registry + bound factory
+// Ears: tall triangles + inner-ear holes near the tips.
+const FOX_EARS =
+    'M6.4 7.4L4.8 1.4Q4.7 1 5.2 1.2L10 5.2z' +
+    'M17.6 7.4L19.2 1.4Q19.3 1 18.8 1.2L14 5.2z' +
+    'M6.1 3.3L6.5 5.6 7.7 4.4z' +
+    'M17.9 3.3L17.5 5.6 16.3 4.4z';
+
+// Head: wide brow, spiky cheeks, jaw sides + eye/nose holes (SAME paint
+// operation — the holes ride the head's own evenodd element).
+const FOX_HEAD =
+    'M12 21.4' +
+    'L7.6 16.4' +
+    'Q4.4 14.6 3.2 13.6' +
+    'L4.4 10.4' +
+    'Q5 7.4 7.6 6.4' +
+    'Q10 5.6 12 6.8' +
+    'Q14 5.6 16.4 6.4' +
+    'Q19 7.4 19.6 10.4' +
+    'L20.8 13.6' +
+    'Q16.4 14.6 16.4 16.4' +
+    'z' +
+    // eye holes (inside the head)
+    'M7.9 11.4a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0z' +
+    'M14.2 11.4a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0z' +
+    // nose hole (apex-down, inside the head)
+    'M11.1 14.6h1.8l-0.9 1.5z';
+
+export const ICON_FOX =
+    `<path d="${FOX_EARS}" ${EVENODD}/>` +
+    `<path d="${FOX_HEAD}" ${EVENODD}/>` +
+    flatPath(
+        // chin wedge completing the V jaw
+        'M12 21.4L7.6 16.4Q9.4 17.6 12 17.6Q14.6 17.6 16.4 16.4z'
+    );
+
 export const svgFox: SvgIconFactory = createSvgIcon('fox', ICON_FOX);
-
-// React layer: same geometry through the shared flat shell
 export const FoxIcon = (props: IconProps) =>
     React.createElement(IconBase, { name: 'fox', content: ICON_FOX, ...props });

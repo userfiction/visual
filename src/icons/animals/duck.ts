@@ -1,12 +1,11 @@
 /**
- * duck — ANIMALS icon: duck with a raised head, bill, tail, wing patch and
- * water ripples.
+ * duck — ANIMALS icon: duck with a raised round head, flat rounded bill,
+ * up-left tail wedge, wing slot and water ripples (distinct from bird's
+ * perched songbird silhouette).
  *
- * GEOMETRY: body = circle r 6.2 at (9.8,15) drawn CLOCKWISE; head circle
- * r 3.5 at (14.2,7.4) overlapping the body's top-right; solid bill triangle
- * and up-left tail triangle; eye hole r 0.85 COUNTERCLOCKWISE inside the
- * head; wing ellipse hole rx 2.3 ry 1.7 COUNTERCLOCKWISE inside the body;
- * two thin solid water bars under the body.
+ * GEOMETRY: tail, body (+wing slot) and head (+eye hole) are separate
+ * evenodd elements (cross-element overlap = union); bill and ripples are
+ * flatPath solid overlays (see svg-icon.ts flatPath + react.tsx IconBase).
  */
 import React from 'react';
 import { createSvgIcon, flatPath } from '../svg-icon';
@@ -14,27 +13,32 @@ import type { SvgIconFactory } from '../svg-icon';
 import { IconBase } from '../react';
 import type { IconProps } from '../react';
 
-export const ICON_DUCK = flatPath(
-    // tail (solid triangle, up-left of the body)
-    'M5.2 12L2.4 9.4 6.2 10z' +
-        // body circle, clockwise
-        'M3.6 15a6.2 6.2 0 1 1 12.4 0a6.2 6.2 0 1 1 -12.4 0z' +
-        // head circle, clockwise (overlaps the body's top-right)
-        'M10.7 7.4a3.5 3.5 0 1 1 7 0a3.5 3.5 0 1 1 -7 0z' +
-        // bill (solid triangle pointing right, overlaps the head)
-        'M17.5 6.2L21.9 7.5 17.5 8.8z' +
-        // eye hole, counterclockwise (inside head only)
-        'M13.75 6.6a0.85 0.85 0 1 0 1.7 0a0.85 0.85 0 1 0 -1.7 0z' +
-        // wing hole, counterclockwise (inside body only)
-        'M6.5 14.6a2.3 1.7 0 1 0 4.6 0a2.3 1.7 0 1 0 -4.6 0z' +
-        // water ripples (solid thin bars under the body)
-        'M2.6 21.4h13.6v0.9h-13.6z' +
-        'M5.4 22.9h9v0.7h-9z'
-);
+const EVENODD = 'fill="currentColor" stroke="none" fill-rule="evenodd"';
 
-// String layer: registers 'duck' in the shared registry + bound factory
+// Tail: up-left wedge (overlaps the body across elements).
+const DUCK_TAIL = 'M4.6 11.6L1.8 8.8Q1.2 8.2 2.2 8.3L6.8 10.4z';
+
+// Body circle + wing slot (teardrop).
+const DUCK_BODY =
+    'M3.4 14.8a6 6 0 1 1 12 0a6 6 0 1 1 -12 0z' +
+    'M6.2 14.4Q8.4 12.4 11.4 13Q12.7 13.3 12 14.7Q11.2 16.1 9.2 16Q7 15.9 6.2 14.4z';
+
+// Head circle + eye hole.
+const DUCK_HEAD =
+    'M10.6 7.2a3.4 3.4 0 1 1 6.8 0a3.4 3.4 0 1 1 -6.8 0z' +
+    'M13.35 6.4a0.85 0.85 0 1 0 1.7 0a0.85 0.85 0 1 0 -1.7 0z';
+
+export const ICON_DUCK =
+    `<path d="${DUCK_TAIL}" ${EVENODD}/>` +
+    `<path d="${DUCK_BODY}" ${EVENODD}/>` +
+    `<path d="${DUCK_HEAD}" ${EVENODD}/>` +
+    flatPath(
+        // bill: rounded flat wedge pointing right
+        'M17 5.8Q21.8 5.5 22 7Q21.8 8.5 17 8.2z' +
+            // water ripples: two thin bars under the body
+            'M2.6 21.2h13.6v0.9h-13.6zM5.4 22.7h9v0.7h-9z'
+    );
+
 export const svgDuck: SvgIconFactory = createSvgIcon('duck', ICON_DUCK);
-
-// React layer: same geometry through the shared flat shell
 export const DuckIcon = (props: IconProps) =>
     React.createElement(IconBase, { name: 'duck', content: ICON_DUCK, ...props });

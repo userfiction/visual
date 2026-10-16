@@ -152,13 +152,16 @@ const GEM_SERIALIZED =
 // y3..10 as two rect subpaths in ONE flat path — single element, no holes.
 const FLAG_SERIALIZED =
     '<path d="M4 2h2v20H4zM6 3h13v7H6z" fill="currentColor" stroke="none"></path>';
-// Cat (animals/cat.ts, REWORKED in VISUAL-TESTS-4): the solid ear triangles
-// now carry inner-ear holes, the CLOCKWISE head circle keeps the
-// COUNTERCLOCKWISE eye/nose holes, and a mouth-line hole plus four SOLID
-// whisker rects were added — still all in ONE path (hole winding is
-// load-bearing — nonzero fill subtracts the sweep-0 subpaths).
+// Cat (animals/cat.ts, REWORKED in VISUAL-TESTS-13): the single-silhouette
+// head+ears body carries the inner-ear/eye/nose/ω-mouth holes cut by
+// EXPLICIT fill-rule="evenodd" (source order d, fill, stroke, fill-rule),
+// and the whisker bars are a SECOND flatPath element — two <path> elements
+// total, in definition order (same two-element precedent as the SwordIcon
+// pin). Re-derived from animals/cat.ts + the flatPath template
+// (svg-icon.ts:101) + the jsdom normalization rules, then diffed against
+// the live serialization by Temp/visual/probe-animals-vt13.ts.
 const CAT_SERIALIZED =
-    '<path d="M6.5 2.5L11 5.5 8 9zM7.4 4.2L7.9 7 9.1 5.4zM17.5 2.5L13 5.5l3 3.5zM16.6 4.2L14.9 5.4 16.1 7zM5.5 14a6.5 6.5 0 1 1 13 0a6.5 6.5 0 1 1 -13 0zM8.2 12.6a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM13.6 12.6a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM11 15l1 1.6L13 15zM11.3 17.6v0.9h1.4v-0.9zM2.6 12.9h4v0.8h-4zM2.6 15.7h4v0.8h-4zM17.4 12.9h4v0.8h-4zM17.4 15.7h4v0.8h-4z" fill="currentColor" stroke="none"></path>';
+    '<path d="M5 2.4L8.6 8.2Q12 7.2 15.4 8.2L19 2.4Q21.1 3.6 20.6 9.4Q21 13 20.2 15.2Q19.4 20.6 12 20.6Q4.6 20.6 3.8 15.2Q3 13 3.6 9.4Q3.1 4.4 5 2.4zM5.5 4.2L7.2 7.2 5.6 7.6zM18.5 4.2L16.8 7.2 18.4 7.6zM7.15 13.2a1.15 1.15 0 1 0 2.3 0a1.15 1.15 0 1 0 -2.3 0zM14.55 13.2a1.15 1.15 0 1 0 2.3 0a1.15 1.15 0 1 0 -2.3 0zM11 15.4L13 15.4 12 16.9zM10.4 17.2A0.8 0.8 0 0 1 12 17.2A0.8 0.8 0 0 1 13.6 17.2z" fill="currentColor" stroke="none" fill-rule="evenodd"></path><path d="M1.4 12.4h3.2v0.6h-3.2zM1.2 14.3h3.4v0.6h-3.4zM1.6 16.2h3v0.6h-3zM19.4 12.4h3.2v0.6h-3.2zM19.4 14.3h3.4v0.6h-3.4zM19.4 16.2h3v0.6h-3z" fill="currentColor" stroke="none"></path>';
 // Apple (fruits/apple.ts, REDESIGNED in the fruit pass): the broad-shoulder
 // two-lobe body (top dimple seating the stem at (12,7.4), bottom lobes
 // dipping to y 22.9 around the bottom-center cleft at (12,21.2)) carries the
@@ -177,20 +180,24 @@ const APPLE_SERIALIZED =
 // VisualIcon live-registry round-trip below.
 const CHECKERED_FLAG_SERIALIZED =
     '<path d="M3 2h2v20H3zM5 3h14v8H5zM7 3v2h2V3zM11 3v2h2V3zM15 3v2h2V3zM5 5v2h2V5zM9 5v2h2V5zM13 5v2h2V5zM17 5v2h2V5zM7 7v2h2V7zM11 7v2h2V7zM15 7v2h2V7zM5 9v2h2V9zM9 9v2h2V9zM13 9v2h2V9zM17 9v2h2V9z" fill="currentColor" stroke="none"></path>';
-// ── VISUAL-TESTS-4 animals-rework pins (probe-captured from
-// Temp/visual/probe-react4.ts via the same jsdom machinery) ──
-// Owl (animals/owl.ts): flatPath (ear tufts + Q-corner body + eye-ring /
-// beak / belly-chevron holes + feet) + TWO literal pupil <circle> dots —
-// THREE elements total, in definition order (path first, circles after);
-// same path+circle multi-element precedent as the SwordIcon pin.
+// ── VISUAL-TESTS-4 animals pins — VISUAL-TESTS-13 redraw refresh
+// (re-derived from the animals/* source constants + the flatPath template +
+// the jsdom normalization rules and diffed against the live serialization
+// by Temp/visual/probe-animals-vt13.ts) ──
+// Owl (animals/owl.ts, redrawn): flatPath (sharp ear tufts + egg body +
+// eye-ring / beak / belly-chevron holes + feet, explicit evenodd) + TWO
+// literal pupil <circle> dots — THREE elements total, in definition order
+// (path first, circles after); same path+circle multi-element precedent as
+// the SwordIcon pin.
 const OWL_SERIALIZED =
-    '<path d="M6.2 7.6L4.8 3 9.4 5.8zM17.8 7.6L19.2 3 14.6 5.8zM12 5.6Q18.8 5.6 18.8 12.6L18.8 18.4Q18.8 21 16.2 21L7.8 21Q5.2 21 5.2 18.4L5.2 12.6Q5.2 5.6 12 5.6zM6.8 11a2.3 2.3 0 1 0 4.6 0a2.3 2.3 0 1 0 -4.6 0zM12.6 11a2.3 2.3 0 1 0 4.6 0a2.3 2.3 0 1 0 -4.6 0zM11.15 13.6l0.85 2.4 0.85-2.4zM8.15 16.6l0.85 1.4 0.85-1.4zM11.15 16.6l0.85 1.4 0.85-1.4zM14.15 16.6l0.85 1.4 0.85-1.4zM8.5 20.9h1.9v0.5a0.95 0.95 0 0 1 -1.9 0zM13.6 20.9h1.9v0.5a0.95 0.95 0 0 1 -1.9 0z" fill="currentColor" stroke="none"></path><circle cx="9.1" cy="11" r="1" fill="currentColor" stroke="none"></circle><circle cx="14.9" cy="11" r="1" fill="currentColor" stroke="none"></circle>';
-// Butterfly (animals/butterfly.ts): FOUR rotated <ellipse> wings + a
-// spot/antenna flatPath + <rect> body + THREE <circle> (head + antenna
-// tips) — EIGHT elements total; imported WITHOUT its component and used
-// ONLY by the VisualIcon live-registry round-trip below.
+    '<path d="M6.6 8L4.6 2.6Q4.5 2.2 5 2.4L10 5.2zM17.4 8L19.4 2.6Q19.5 2.2 19 2.4L14 5.2zM12 4.8Q18.6 4.8 18.6 12L18.6 18Q18.6 20.8 15.8 20.8L8.2 20.8Q5.4 20.8 5.4 18L5.4 12Q5.4 4.8 12 4.8zM6.9 10.9a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0zM12.3 10.9a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0zM11.15 13.9l0.85 2.2 0.85-2.2zM8.15 17l0.85 1.3 0.85-1.3zM11.15 17l0.85 1.3 0.85-1.3zM14.15 17l0.85 1.3 0.85-1.3zM8.5 20.7h1.9v0.4a0.95 0.95 0 0 1 -1.9 0zM13.6 20.7h1.9v0.4a0.95 0.95 0 0 1 -1.9 0z" fill="currentColor" stroke="none" fill-rule="evenodd"></path><circle cx="9.3" cy="10.9" r="1.05" fill="currentColor" stroke="none"></circle><circle cx="14.7" cy="10.9" r="1.05" fill="currentColor" stroke="none"></circle>';
+// Butterfly (animals/butterfly.ts, redrawn): FOUR rotated evenodd PATH
+// wings (each carries its own spot hole in the same d) + the antenna
+// flatPath + <rect> body + THREE <circle> (head + antenna tips) — SIX
+// elements total; imported WITHOUT its component and used ONLY by the
+// VisualIcon live-registry round-trip below.
 const BUTTERFLY_SERIALIZED =
-    '<ellipse cx="7.4" cy="9.2" rx="3.7" ry="4.5" transform="rotate(-24 7.4 9.2)" fill="currentColor" stroke="none"></ellipse><ellipse cx="16.6" cy="9.2" rx="3.7" ry="4.5" transform="rotate(24 16.6 9.2)" fill="currentColor" stroke="none"></ellipse><ellipse cx="8.6" cy="15.8" rx="2.9" ry="3.3" transform="rotate(24 8.6 15.8)" fill="currentColor" stroke="none"></ellipse><ellipse cx="15.4" cy="15.8" rx="2.9" ry="3.3" transform="rotate(-24 15.4 15.8)" fill="currentColor" stroke="none"></ellipse><path d="M6.3 9.2a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM15.5 9.2a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM7.5 15.8a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM14.3 15.8a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM11.3 5.6L9.9 2.6 10.7 2.3 12 5.5zM12.7 5.5L14.1 2.5 14.9 2.8 13.3 5.6z" fill="currentColor" stroke="none"></path><rect x="11.25" y="7.4" width="1.5" height="11.6" rx="0.75" fill="currentColor" stroke="none"></rect><circle cx="12" cy="6.2" r="1.25" fill="currentColor" stroke="none"></circle><circle cx="10.3" cy="2.4" r="0.65" fill="currentColor" stroke="none"></circle><circle cx="14.5" cy="2.6" r="0.65" fill="currentColor" stroke="none"></circle>';
+    '<path d="M3.5 9.2a3.9 4.7 0 1 1 7.8 0a3.9 4.7 0 1 1 -7.8 0zM6.3 9.2a1.1 1.1 0 1 1 2.2 0a1.1 1.1 0 1 1 -2.2 0z" transform="rotate(-24 7.4 9.2)" fill="currentColor" stroke="none" fill-rule="evenodd"></path><path d="M12.7 9.2a3.9 4.7 0 1 1 7.8 0a3.9 4.7 0 1 1 -7.8 0zM15.5 9.2a1.1 1.1 0 1 1 2.2 0a1.1 1.1 0 1 1 -2.2 0z" transform="rotate(24 16.6 9.2)" fill="currentColor" stroke="none" fill-rule="evenodd"></path><path d="M5.7 15.8a2.9 3.3 0 1 1 5.8 0a2.9 3.3 0 1 1 -5.8 0zM7.5 15.8a1.1 1.1 0 1 1 2.2 0a1.1 1.1 0 1 1 -2.2 0z" transform="rotate(24 8.6 15.8)" fill="currentColor" stroke="none" fill-rule="evenodd"></path><path d="M12.5 15.8a2.9 3.3 0 1 1 5.8 0a2.9 3.3 0 1 1 -5.8 0zM14.3 15.8a1.1 1.1 0 1 1 2.2 0a1.1 1.1 0 1 1 -2.2 0z" transform="rotate(-24 15.4 15.8)" fill="currentColor" stroke="none" fill-rule="evenodd"></path><path d="M11.3 5.6L9.9 2.6 10.7 2.3 12 5.5zM12.7 5.5L14.1 2.5 14.9 2.8 13.3 5.6z" fill="currentColor" stroke="none"></path><rect x="11.25" y="7.4" width="1.5" height="11.6" rx="0.75" fill="currentColor" stroke="none"></rect><circle cx="12" cy="6.2" r="1.25" fill="currentColor" stroke="none"></circle><circle cx="10.3" cy="2.4" r="0.65" fill="currentColor" stroke="none"></circle><circle cx="14.5" cy="2.6" r="0.65" fill="currentColor" stroke="none"></circle>';
 // ── VISUAL-TESTS-6 fruits-rework + nature pins (probe-captured from
 // Temp/visual/probe-react6.ts via the same jsdom machinery) ──
 // Willow (nature/willow.ts, REWORKED in VISUAL-TESTS-9 — a ground line
@@ -322,8 +329,9 @@ describe('VisualIcon (registry-driven render-any)', () => {
         // set head, so a registration-order mistake would not pass unnoticed.
         const { container } = render(<VisualIcon name="butterfly" />);
         const el = container.querySelector('svg[data-icon="butterfly"]') as SVGSVGElement;
-        // EIGHT serialized elements (4 ellipse wings + spot/antenna path +
-        // rect body + head/antenna-tip circles) — exact full-string pin:
+        // SIX serialized elements (4 rotated evenodd wing paths, each
+        // carrying its own spot hole + the antenna path + the rect body +
+        // head/antenna-tip circles) — exact full-string pin:
         expect(el.innerHTML).toBe(BUTTERFLY_SERIALIZED);
         // …and the registry-backed definition normalizes to the same string
         expect(el.innerHTML).toBe(serialized(ICON_BUTTERFLY));
@@ -428,11 +436,14 @@ describe('per-component spot checks (one file per icon)', () => {
         const { container } = render(<CatIcon />);
         const el = container.querySelector('svg[data-icon="cat"]') as SVGSVGElement;
         expect(el).not.toBeNull();
-        // Single path (REWORKED in VISUAL-TESTS-4): the ear triangles now
-        // carry COUNTERCLOCKWISE inner-ear holes, the CLOCKWISE head circle
-        // keeps the COUNTERCLOCKWISE eye/nose holes, and the mouth-line hole
-        // + four SOLID whisker rects were added (hole winding is load-bearing
-        // in animals/cat.ts — nonzero fill subtracts the sweep-0 subpaths).
+        // TWO elements (REWORKED in VISUAL-TESTS-13): flatPath ONE is the
+        // single-silhouette head+ears body whose inner-ear/eye/nose/ω-mouth
+        // holes are cut by the EXPLICIT fill-rule="evenodd" attribute (the
+        // source order is d, fill, stroke, fill-rule); flatPath TWO carries
+        // the six whisker bars. Like the SwordIcon two-element precedent,
+        // both must survive the React shell (dangerouslySetInnerHTML) and
+        // jsdom serialization intact, in definition order: body first,
+        // whiskers second.
         expect(el.innerHTML).toBe(CAT_SERIALIZED);
         expect(el.innerHTML).toBe(serialized(ICON_CAT));
     });
@@ -446,7 +457,7 @@ describe('per-component spot checks (one file per icon)', () => {
         // eye-ring holes) — like the SwordIcon path+circle precedent, all
         // must survive the React shell (dangerouslySetInnerHTML) and the
         // jsdom serialization intact, in definition order: path first,
-        // circles after.
+        // circles after. (Redrawn in VISUAL-TESTS-13 — see OWL_SERIALIZED.)
         expect(el.getAttribute('data-icon')).toBe('owl');
         expect(el.innerHTML).toBe(OWL_SERIALIZED);
         expect(el.innerHTML).toBe(serialized(ICON_OWL));

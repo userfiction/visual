@@ -19,7 +19,8 @@
 //   animals/        — ANIMALS subset, same pattern (cat, dog, bird, fish,
 //                     rabbit, bear, dragon, snake, turtle, paw + horse,
 //                     lion, owl, fox, whale, frog, snail, penguin,
-//                     butterfly, duck ×20)
+//                     butterfly, duck + 40 land, bird, marine and reptile
+//                     species ×60; full list in animals/index.ts)
 //   fruits/         — FRUITS subset, same pattern (apple, banana, cherry,
 //                     grape, orange, lemon, watermelon, pear, strawberry,
 //                     peach + pineapple, kiwi, mango, avocado, blueberry,

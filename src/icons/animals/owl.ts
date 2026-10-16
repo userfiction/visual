@@ -1,13 +1,11 @@
 /**
- * owl — ANIMALS icon: owl with ear tufts, ringed eyes, beak, belly chevrons
+ * owl — ANIMALS icon: owl with sharp ear tufts, big ringed eyes (dark
+ * pupils re-centered in the light rings), apex-down beak, belly chevrons
  * and feet.
  *
- * GEOMETRY: body = rounded-rect path (Q corners) x 5.2..18.8, y 5.6..21;
- * ear tufts = two solid triangles overlapping the body's top corners; eye
- * rings = two COUNTERCLOCKWISE hole circles r 2.3 with separate solid
- * pupil <circle> dots r 1 re-centering inside each ring; apex-down beak
- * hole and three belly chevron holes cut COUNTERCLOCKWISE inside the body;
- * feet = two rounded-bottom bumps under the body's bottom edge.
+ * GEOMETRY: tufts/body/rings/beak/chevrons/feet ride one evenodd element
+ * (holes at depth 2); the pupils are separate solid circles re-filling the
+ * ring holes' centers (see svg-icon.ts flatPath + react.tsx IconBase).
  */
 import React from 'react';
 import { createSvgIcon, flatPath } from '../svg-icon';
@@ -16,34 +14,33 @@ import { IconBase } from '../react';
 import type { IconProps } from '../react';
 
 const FLAT = 'fill="currentColor" stroke="none"';
+const EVENODD = 'fill="currentColor" stroke="none" fill-rule="evenodd"';
+
+const OWL_BODY =
+    // ear tufts (solid triangles overlapping the body's top corners)
+    'M6.6 8L4.6 2.6Q4.5 2.2 5 2.4L10 5.2z' +
+    'M17.4 8L19.4 2.6Q19.5 2.2 19 2.4L14 5.2z' +
+    // body (egg: narrower top, wider base)
+    'M12 4.8Q18.6 4.8 18.6 12L18.6 18Q18.6 20.8 15.8 20.8L8.2 20.8Q5.4 20.8 5.4 18L5.4 12Q5.4 4.8 12 4.8z' +
+    // eye ring holes
+    'M6.9 10.9a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0z' +
+    'M12.3 10.9a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0z' +
+    // beak hole (apex-down)
+    'M11.15 13.9l0.85 2.2 0.85-2.2z' +
+    // belly chevron holes
+    'M8.15 17l0.85 1.3 0.85-1.3z' +
+    'M11.15 17l0.85 1.3 0.85-1.3z' +
+    'M14.15 17l0.85 1.3 0.85-1.3z' +
+    // feet bumps
+    'M8.5 20.7h1.9v0.4a0.95 0.95 0 0 1 -1.9 0z' +
+    'M13.6 20.7h1.9v0.4a0.95 0.95 0 0 1 -1.9 0z';
 
 export const ICON_OWL =
-    flatPath(
-        // ear tufts (solid triangles overlapping the body's top corners)
-        'M6.2 7.6L4.8 3 9.4 5.8z' +
-            'M17.8 7.6L19.2 3 14.6 5.8z' +
-            // body (rounded rect via Q corners), clockwise outline
-            'M12 5.6Q18.8 5.6 18.8 12.6L18.8 18.4Q18.8 21 16.2 21L7.8 21Q5.2 21 5.2 18.4L5.2 12.6Q5.2 5.6 12 5.6z' +
-            // eye ring holes, counterclockwise
-            'M6.8 11a2.3 2.3 0 1 0 4.6 0a2.3 2.3 0 1 0 -4.6 0z' +
-            'M12.6 11a2.3 2.3 0 1 0 4.6 0a2.3 2.3 0 1 0 -4.6 0z' +
-            // beak hole, counterclockwise (apex-down)
-            'M11.15 13.6l0.85 2.4 0.85-2.4z' +
-            // belly chevron holes, counterclockwise (apex-down)
-            'M8.15 16.6l0.85 1.4 0.85-1.4z' +
-            'M11.15 16.6l0.85 1.4 0.85-1.4z' +
-            'M14.15 16.6l0.85 1.4 0.85-1.4z' +
-            // feet (rounded-bottom bumps under the body)
-            'M8.5 20.9h1.9v0.5a0.95 0.95 0 0 1 -1.9 0z' +
-            'M13.6 20.9h1.9v0.5a0.95 0.95 0 0 1 -1.9 0z'
-    ) +
+    `<path d="${OWL_BODY}" ${EVENODD}/>` +
     // pupils: solid dots re-centering inside the eye-ring holes
-    `<circle cx="9.1" cy="11" r="1" ${FLAT}/>` +
-    `<circle cx="14.9" cy="11" r="1" ${FLAT}/>`;
+    `<circle cx="9.3" cy="10.9" r="1.05" ${FLAT}/>` +
+    `<circle cx="14.7" cy="10.9" r="1.05" ${FLAT}/>`;
 
-// String layer: registers 'owl' in the shared registry + bound factory
 export const svgOwl: SvgIconFactory = createSvgIcon('owl', ICON_OWL);
-
-// React layer: same geometry through the shared flat shell
 export const OwlIcon = (props: IconProps) =>
     React.createElement(IconBase, { name: 'owl', content: ICON_OWL, ...props });

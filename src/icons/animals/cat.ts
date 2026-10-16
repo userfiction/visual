@@ -1,13 +1,21 @@
 /**
- * cat — ANIMALS icon: cat face with inner ears, whiskers and a mouth line.
+ * cat — ANIMALS icon: cat face with integrated triangular ears, inner-ear
+ * holes, round eyes, apex-down nose, ω mouth and solid whisker bars.
  *
- * GEOMETRY: head = circle r 6.5 at (12,14) drawn CLOCKWISE (sweep-1); ears
- * = two solid triangles overlapping the head's top edge, each carrying a
- * COUNTERCLOCKWISE inner-ear hole (fully above the head circle, so the
- * holes cut only the ears); eyes r 1.1 and the apex-down nose are
- * COUNTERCLOCKWISE holes inside the head; the mouth is a thin rect hole
- * (v-first winding) below the nose; whiskers = four thin SOLID rects
- * protruding sideways (their overlap with the head is a plain union).
+ * ANATOMY: the head + ears are ONE silhouette (no seams at the ear roots —
+ * a separate-triangle union would leave visual notches at 24px): wide
+ * trapezoid head with bulged sides (cheek width 3.6..20.6 — near the full
+ * 2..22 canvas), two triangular ears rising from the forehead, round eyes
+ * (holes), apex-down triangle nose (hole) and an ω mouth (two semicircle
+ * slots) under it; three whisker bars per side overlap the cheek edges.
+ *
+ * GEOMETRY vs svg-icon/IconBase (../svg-icon.ts, ../react.tsx): the silhouette
+ * + holes ride ONE <path> element with explicit fill-rule="evenodd" — hole
+ * subpaths inside it are transparent regardless of winding (robust under
+ * nonzero on every renderer); the solid whiskers are a SECOND <path> element
+ * (cross-element overlap = union). The string layer wraps each path with
+ * flatPath's fill="currentColor" stroke="none" pair; IconBase injects the
+ * same markup via dangerouslySetInnerHTML inside its 24×24 shell.
  */
 import React from 'react';
 import { createSvgIcon, flatPath } from '../svg-icon';
@@ -15,25 +23,45 @@ import type { SvgIconFactory } from '../svg-icon';
 import { IconBase } from '../react';
 import type { IconProps } from '../react';
 
-export const ICON_CAT = flatPath(
-    // ears (solid triangles) + inner-ear holes (reversed winding)
-    'M6.5 2.5L11 5.5 8 9z' +
-        'M7.4 4.2L7.9 7 9.1 5.4z' +
-        'M17.5 2.5L13 5.5l3 3.5z' +
-        'M16.6 4.2L14.9 5.4 16.1 7z' +
-        // head circle, clockwise
-        'M5.5 14a6.5 6.5 0 1 1 13 0a6.5 6.5 0 1 1 -13 0z' +
-        // eye holes, counterclockwise (sweep-0)
-        'M8.2 12.6a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0z' +
-        'M13.6 12.6a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0z' +
-        // nose hole, counterclockwise
-        'M11 15l1 1.6L13 15z' +
-        // mouth line hole (v-first rect = hole winding)
-        'M11.3 17.6v0.9h1.4v-0.9z' +
-        // whiskers: solid thin rects, two per side
-        'M2.6 12.9h4v0.8h-4zM2.6 15.7h4v0.8h-4z' +
-        'M17.4 12.9h4v0.8h-4zM17.4 15.7h4v0.8h-4z'
-);
+const EVENODD = 'fill="currentColor" stroke="none" fill-rule="evenodd"';
+
+// Head + ears silhouette (depth 1) with inner-ear / eye / nose / mouth holes
+// (depth 2 = transparent) — evenodd makes the winding irrelevant.
+const CAT_BODY =
+    // silhouette: left ear tip → inner edges → right ear → sides → chin
+    'M5 2.4' +
+    'L8.6 8.2' + // left ear inner edge down to the forehead
+    'Q12 7.2 15.4 8.2' + // forehead dip between the ears
+    'L19 2.4' + // right ear inner edge up to the tip
+    'Q21.1 3.6 20.6 9.4' + // right ear outer edge, bulging right
+    'Q21 13 20.2 15.2' + // right cheek
+    'Q19.4 20.6 12 20.6' + // rounded chin
+    'Q4.6 20.6 3.8 15.2' + // left cheek
+    'Q3 13 3.6 9.4' + // left side up
+    'Q3.1 4.4 5 2.4' + // left ear outer edge, bulging left
+    'z' +
+    // inner-ear holes (small triangles hugging the ear tips)
+    'M5.5 4.2L7.2 7.2 5.6 7.6z' +
+    'M18.5 4.2L16.8 7.2 18.4 7.6z' +
+    // eye holes (round)
+    'M7.15 13.2a1.15 1.15 0 1 0 2.3 0a1.15 1.15 0 1 0 -2.3 0z' +
+    'M14.55 13.2a1.15 1.15 0 1 0 2.3 0a1.15 1.15 0 1 0 -2.3 0z' +
+    // nose hole (apex down)
+    'M11 15.4L13 15.4 12 16.9z' +
+    // ω mouth hole: two semicircles bulging down from a straight top
+    'M10.4 17.2A0.8 0.8 0 0 1 12 17.2A0.8 0.8 0 0 1 13.6 17.2z';
+
+// Whiskers: three thin bars per side overlapping the cheek edges (solid).
+const CAT_WHISKERS =
+    'M1.4 12.4h3.2v0.6h-3.2z' +
+    'M1.2 14.3h3.4v0.6h-3.4z' +
+    'M1.6 16.2h3v0.6h-3z' +
+    'M19.4 12.4h3.2v0.6h-3.2z' +
+    'M19.4 14.3h3.4v0.6h-3.4z' +
+    'M19.4 16.2h3v0.6h-3z';
+
+export const ICON_CAT =
+    `<path d="${CAT_BODY}" ${EVENODD}/>` + flatPath(CAT_WHISKERS);
 
 // String layer: registers 'cat' in the shared registry + bound factory
 export const svgCat: SvgIconFactory = createSvgIcon('cat', ICON_CAT);

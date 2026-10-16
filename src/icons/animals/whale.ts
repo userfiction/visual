@@ -1,14 +1,11 @@
 /**
- * whale — ANIMALS icon: whale facing left with tail flukes, eye, belly
- * groove and a three-bar water spout.
+ * whale — ANIMALS icon: horizontal whale facing left — blunt rounded snout,
+ * domed back, WIDE two-lobed horizontal flukes with a deep notch (never a
+ * vertical fish triangle), V-shaped spout over the blowhole, eye + smile.
  *
- * GEOMETRY: body = dome arc (rx 7.6 ry 4.9 over (2.4..17.6, 12.4)) with
- * rounded bottom corners (r 3.2/3) and a flat-ish bottom at y 17.2,
- * drawn CLOCKWISE (sweep-1 throughout); tail flukes = solid double-spike
- * path overlapping the body's right edge; eye hole r 0.8 and the belly
- * groove line hole cut COUNTERCLOCKWISE inside the body; spout = three
- * thin solid bars rising from the dome (their lower ends dip into the
- * body — plain union).
+ * GEOMETRY: body (eye hole + smile slit) is one evenodd element; the flukes
+ * and the spout column + two branches are flatPath solid overlays (cross-
+ * element overlap = union — see svg-icon.ts flatPath + react.tsx IconBase).
  */
 import React from 'react';
 import { createSvgIcon, flatPath } from '../svg-icon';
@@ -16,22 +13,37 @@ import type { SvgIconFactory } from '../svg-icon';
 import { IconBase } from '../react';
 import type { IconProps } from '../react';
 
-export const ICON_WHALE = flatPath(
-    // body: dome + rounded bottom corners, clockwise
-    'M2.4 12.4a7.6 4.9 0 0 1 15.2 0v1.8a3.2 3 0 0 1 -3.2 3L5.6 17.2a3.2 3 0 0 1 -3.2 -3z' +
-        // tail flukes (solid, notched right edge)
-        'M17.2 9.8L21.8 6.4Q22.8 12.2 21.8 18L17.2 14.6z' +
-        // eye hole, counterclockwise
-        'M5.3 11.2a0.8 0.8 0 1 0 1.6 0a0.8 0.8 0 1 0 -1.6 0z' +
-        // belly groove line hole (v-first rect)
-        'M4.2 15.3v0.7h10.2v-0.7z' +
-        // water spout: three thin solid bars above the dome
-        'M4.9 4.6h0.9v4.2h-0.9zM6.7 2.6h0.9v5.8h-0.9zM8.5 4.4h0.9v3.6h-0.9z'
-);
+const EVENODD = 'fill="currentColor" stroke="none" fill-rule="evenodd"';
 
-// String layer: registers 'whale' in the shared registry + bound factory
+// Body: blunt snout → dome → tail joint + eye + smile slit.
+const WHALE_BODY =
+    'M2.4 13.2' +
+    'Q2.4 10 5.4 8.8' + // snout up to the back
+    'Q10 6.9 14.6 8.6' + // domed back
+    'Q17 10.2 18.2 7.1L19.6 8.1Q19.7 13.2 17.6 15.6' + // raised tail stock
+    'Q14.4 17.9 10 17.9' + // belly
+    'Q5 17.9 2.9 15.2' + // belly to the snout bottom
+    'Q2 14.3 2.4 13.2' + // snout front
+    'z' +
+    // eye hole
+    'M4.5 12.4a0.8 0.8 0 1 0 1.6 0a0.8 0.8 0 1 0 -1.6 0z' +
+    // smile slit (crescent along the jaw)
+    'M4.3 15.7Q8.4 16.9 12.6 15.8L12.6 15Q8.4 16.1 4.3 14.9z';
+
+export const ICON_WHALE =
+    `<path d="${WHALE_BODY}" ${EVENODD}/>` +
+    flatPath(
+        // Raised horizontal flukes extend LEFT/RIGHT above the tail stock,
+        // unlike a fish's vertical fork at the end of its body.
+        'M18.8 8.8Q15 8.7 13.8 4.5Q16.4 4.4 18.8 6.7Q20.3 4.2 23 3.9Q22.6 7.8 18.8 8.8z' +
+            // Small downward pectoral flipper reinforces the mammal profile.
+            'M10 16.6Q12 18.5 15 19.1L13 16.8z' +
+            // spout: column + two V branches over the blowhole
+            'M6.55 8.4L6.55 4.4 7.45 4.4 7.45 8.4z' +
+            'M6.7 4.7L4.7 2.5Q4.4 2.2 4.9 2.3L7.6 4.1z' +
+            'M7.3 4.1L9.7 2.1Q10.1 2 9.9 2.5L8.3 4.7z'
+    );
+
 export const svgWhale: SvgIconFactory = createSvgIcon('whale', ICON_WHALE);
-
-// React layer: same geometry through the shared flat shell
 export const WhaleIcon = (props: IconProps) =>
     React.createElement(IconBase, { name: 'whale', content: ICON_WHALE, ...props });

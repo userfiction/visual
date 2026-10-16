@@ -1,38 +1,30 @@
 /**
  * icons.test.ts — deterministic tests for the built-in icon registry
  * (./builtins.ts) over the ONE-FILE-PER-ICON architecture (generic/*.ts ×23,
- * fantasy/*.ts ×10, flags/*.ts ×8, animals/*.ts ×20, fruits/*.ts ×19,
+ * fantasy/*.ts ×10, flags/*.ts ×8, animals/*.ts ×60, fruits/*.ts ×19,
  * nature/*.ts ×28 — cross-reference the FILE ARCHITECTURE header in
- * svg-icon.ts): the exact 108-factory key list, the per-icon flat-design
+ * svg-icon.ts): the exact 148-factory key list, the per-icon flat-design
  * structural invariants, exact full-string spot checks (generic trio +
- * fantasy trio + one per themed subset: flag/checkeredFlag, cat,
- * apple/watermelon + the new-animal trio horse/penguin/butterfly + the
- * new-fruit trio kiwi/coconut/blueberry + flower and sunflower for the
- * round-trip + lightning — the round-trip's new LAST name, pinned via the
- * ICON_LIGHTNING composition), geometry wiring (including the load-bearing
- * hole-winding subpaths), and the registry round-trip proving that
- * importing this module registers every built-in name — including the
- * late-alphabet fantasy, animal, fruit and nature sets.
+ * fantasy trio + flags pair flag/checkeredFlag + the redrawn animal trio
+ * cat/horse/penguin + literal butterfly + tail duck + the fruit trio
+ * apple/watermelon/kiwi-coconut-blueberry + flower and sunflower for the
+ * round-trip + lightning — the round-trip's LAST name, pinned via the
+ * ICON_LIGHTNING composition), geometry wiring (including hole subpaths),
+ * and the registry round-trip proving that importing this module registers
+ * every built-in name — including the late-alphabet fantasy, animal, fruit
+ * and nature sets. All 60 animals/*.ts modules carry their own focused
+ * contract tests (animals/animals.test.ts); this file pins the registry
+ * contract and spot geometry.
  *
- * EXPECTED VALUES: every full-string pin below is composed from the
- * documented svgIcon OUTPUT CONTRACT (svg-icon.ts: xmlns → viewBox →
- * width="1em" → height="1em" → fill="currentColor", then the definition
- * content verbatim — flatPath in svg-icon.ts supplies the per-element
- * fill="currentColor" stroke="none" pair) and was verified byte-for-byte
- * against the real runtime via a scratch probe under the repo-root Temp/
- * directory (Temp/visual/probe-icons8.ts prints the registry key order +
- * the exact full render of every one of the then-98 built-ins + a per-icon
- * svgIcon delegation identity check; run with
- * `npx vite-node Temp/visual/probe-icons8.ts` from the workspace root —
- * the map has since grown to 108; see the VISUAL-TESTS-11 APPEND NOTE at
- * the end of this header for how the ten new entries are pinned).
- * All full-string constants in this file — the generic/fantasy/flags/
- * animal sets AND the nature set after its VISUAL-TESTS-8 detail pass —
- * were re-verified byte-for-byte against that probe output
- * (Temp/visual/verify-icons8.ts re-checks every composed pin below against
- * the runtime before the pins were committed; the SIX fruit full strings
- * were re-verified against Temp/visual/probe-fruits-vt12*.ts in
- * VISUAL-TESTS-12 — see the REWORK NOTE at the end of this header).
+ * EXPECTED VALUES: every pin below is composed from the documented svgIcon
+ * OUTPUT CONTRACT (svg-icon.ts: xmlns → viewBox → width="1em" → height="1em"
+ * → fill="currentColor", then the definition content verbatim — flatPath in
+ * svg-icon.ts supplies the per-element fill="currentColor" stroke="none"
+ * pair, the evenodd template appends fill-rule="evenodd") and was verified
+ * byte-for-byte against the runtime via scratch probes under the repo-root
+ * Temp/ directory (most recently Temp/visual/probe-animals-vt13.ts, which
+ * diffs hand-derived strings against the live render; run with
+ * `npx vite-node Temp/visual/<probe>.ts` from the workspace root).
  * Nature specifics: the
  * EXISTING 12 icons gained detail (oak leaf-cluster holes + ground line,
  * pine ground, palm trunk-ring/midrib holes + ground, birch THREE re-laid
@@ -48,19 +40,15 @@
  * silhouette — see the REWORK NOTE at the end of this header.)
  *
  * CONTRACTS PINNED:
- *   1. svgIcons exposes EXACTLY the 108 built-in names in registration
+ *   1. svgIcons exposes EXACTLY the 148 built-in names in registration
  *      order — generic 23 first, then fantasy 10, then the themed
- *      subsets flags 8 → animals 20 → fruits 19 → nature 28 (builtins.ts
+ *      subsets flags 8 → animals 60 → fruits 19 → nature 28 (builtins.ts
  *      appends; an insertion would change key order and break this
- *      contract). The nature block grew from 12 to 18 (VISUAL-TESTS-8):
- *      the four tree additions (appleTree/cherryTree/redwood/spruce) sit
- *      between 'willow' and 'bush', the two bloom additions
- *      (tulip/sunflower) after 'flower' — both slots follow
- *      nature/index.ts's sub-barrel order — and from 18 to 28
- *      (VISUAL-TESTS-11): the LANDSCAPE subset (mountain/hills/river)
- *      then the SKY subset (sun/moon/cloud/stars/sunrise/rainbow/
- *      lightning) appended after 'sunflower', making 'lightning' the
- *      map's LAST name.
+ *      contract). The animals block grew from 20 to 60
+ *      (VISUAL-TESTS-13 redraw/expansion): the 20 originals keep their
+ *      redrawn geometry and relative order (cat → duck), then the 40
+ *      wildlife additions elephant … chameleon append after 'duck' —
+ *      chameleon is the animals tail, immediately before 'apple'.
  *   2. EVERY factory renders the flat-design shell: starts with `<svg `,
  *      ends with `</svg>`, carries the xmlns declaration, per-element flat
  *      attributes fill="currentColor" stroke="none", and NO gradient or
@@ -70,105 +58,77 @@
  *   4. Exact full strings for the generic trio: check / plus / menu.
  *   5. Exact full strings for the fantasy trio: sword / gem / crown
  *      (sword exercises the literal non-path <circle> pommel element).
- *   6. Exact full strings for the new-subset quintet: flag /
- *      checkeredFlag (14 counterclockwise checker holes cut from the
- *      clockwise flag rect — hole winding is load-bearing, same-direction
- *      subpaths would render the flag solid) / cat (inner-ear + sweep-0
- *      eye/nose/mouth holes inside the sweep-1 head + solid whiskers) /
- *      apple (the VISUAL-TESTS-12 rework: the two-lobe body rising to a
- *      (12,7.4) top dimple with the evenodd left highlight hole + the
- *      flatPath stem and leaf lens) / watermelon (the VISUAL-TESTS-12
- *      rework: the evenodd flesh half-disc with three teardrop seed holes
- *      + the SEPARATED flatPath 1.4-unit rind band).
- *   7. Exact full strings for the new-animal trio: horse (single
- *      flatPath: Q-curved head/neck profile + ears/mane + eye/nostril
- *      holes) / penguin (single flatPath: belly hole with the beak
- *      re-filling it + flipper lenses) / butterfly (mixed literal
- *      elements: four <ellipse transform> wings + <rect rx> body +
- *      <circle> head/antenna dots).
- *   8. Exact full strings for the new-fruit trio: kiwi (THREE path
- *      elements: the evenodd skin ring — outer 9.5×10.5 oval + inner 8×9
- *      sweep-0 reversed hole — the evenodd flesh oval with EIGHT radial
- *      seed slots and the flatPath solid core lens; the VISUAL-TESTS-12
- *      rework replaced the old circular doughnut + float-noise seed
- *      ring) / coconut (the evenodd hull ellipse ring over the flatPath
- *      flesh bowl with three fiber notches — the VISUAL-TESTS-12 rework
- *      replaced the old crack band + face eyes) / blueberry (one evenodd
- *      path holding the three berry circles AND their five-point calyx
- *      star holes, plus the flatPath leaf — the old
- *      stars-behind-opaque-circles bug is gone).
- *   9. Geometry is actually wired per name (243 fragment spot checks) —
- *      including hole subpaths whose WINDING (sweep-0 vs sweep-1, or
- *      reversed vertex order) is load-bearing under nonzero fill: if a
- *      hole subpath wound the same direction as its enclosing shape the
- *      icon would render solid, so the pins assert the exact hole
- *      fragments exist verbatim (same approach as the spellbook
- *      star-hole pin in the original set). Covers the reworked animals
- *      (cat/dog/bird/fish/rabbit/bear/dragon/snake/turtle), the ten
- *      added animals (horse/lion/owl/fox/whale/frog/snail/penguin/
- *      butterfly/duck), ALL NINETEEN VISUAL-TESTS-12 reworked fruits
- *      (apple/banana/cherry/grape/orange/lemon/watermelon/pear/
- *      strawberry/peach/pineapple/kiwi/mango/avocado/blueberry/coconut/
- *      pomegranate/plum/melon) and the
- *      fragment-covered nature subset (18 of its 28 icons: the
- *      detail-passed originals oak/pine/palm/birch/maple/fir/cypress/
- *      willow/bush/cactus/fern/flower plus the six additions appleTree/
- *      cherryTree/redwood/spruce/tulip/sunflower — the ten
+ *   6. Exact full strings for the flags pair: flag / checkeredFlag (14
+ *      counterclockwise checker holes cut from the clockwise flag rect —
+ *      hole winding is load-bearing, same-direction subpaths would render
+ *      the flag solid).
+ *   7. Exact full strings for the redrawn animals cat / horse / penguin
+ *      and the literal-element butterfly (probe-verified against the
+ *      CURRENT geometry — cat/horse/penguin use the evenodd-template
+ *      composition; butterfly's FOUR rotated evenodd path wings each
+ *      carry their spot hole in the SAME path, so every wing spot cuts
+ *      visually and the pins track present source verbatim).
+ *   8. Exact full strings for the fruit trio kiwi/coconut/blueberry and
+ *      the apple/watermelon pair (the VISUAL-TESTS-12 evenodd rework).
+ *   9. Geometry is actually wired per name (fragment spot checks) —
+ *      including hole subpaths whose winding or evenodd depth is
+ *      load-bearing, asserted verbatim. Covers the redrawn animal
+ *      originals (dog/bird/fish/rabbit (2 evenodd)/bear (2 evenodd)/
+ *      dragon/snake (ribbon+spots)/turtle (head+eye evenodd)/paw/lion/
+ *      owl/fox/whale/frog/snail (shell/body evenodd) + the
+ *      cat/horse/penguin/butterfly (4 evenodd wing paths)/duck
+ *      full-string pins), chameleon from the additions, ALL NINETEEN
+ *      VISUAL-TESTS-12 reworked fruits (apple/banana/cherry/grape/orange/
+ *      lemon/watermelon/pear/strawberry/peach/pineapple/kiwi/mango/
+ *      avocado/blueberry/coconut/pomegranate/plum/melon) and the
+ *      fragment-covered nature subset (18 of its 28 icons — the ten
  *      VISUAL-TESTS-11 landscape/sky icons carry no full-string/fragment
- *      pins yet; they are covered by the key-list pin, the all-icons
+ *      pins; they are covered by the key-list pin, the all-icons
  *      shell/delegation loop and the round-trip's 'lightning' pin).
  *
- *  10. Registry round-trip: svgIcon('spellbook') AND svgIcon('duck') AND
- *      svgIcon('strawberry') AND svgIcon('flower') AND
+ *  10. Registry round-trip: svgIcon('spellbook') AND svgIcon('chameleon')
+ *      AND svgIcon('strawberry') AND svgIcon('flower') AND
  *      svgIcon('sunflower') render the exact strings after importing this
  *      module — importing the builtins map (via the
  *      generic/fantasy/flags/animals/fruits/nature sub-barrels)
  *      registered ALL built-ins, and all five names sit late in their
  *      subsets, so a stale/missing registration could not fake this pass.
- *      ('sunflower' WAS the very LAST name in the map until
- *      VISUAL-TESTS-11 appended the landscape + sky subsets; the
- *      round-trip now also pins the new LAST name 'lightning' —
- *      svgIcon('lightning') equals svgIcons.lightning() AND the shell +
- *      ICON_LIGHTNING composition.)
+ *      ('chameleon' is the NEW late-alphabet animals-tail addition —
+ *      late enough that an animals sub-barrel omission could not fake it;
+ *      'lightning' remains the map's LAST name, pinned via the registry
+ *      delegation identity AND the shell + ICON_LIGHTNING composition.)
  *
- * VISUAL-TESTS-10 REWORK NOTE: the fruit geometry pass re-laid apple
- * (two-lobe silhouette + deep dimple), peach (beak tip), mango (beaked
- * body path, ellipse removed), pear (single teardrop, circles removed),
- * plum (squat wide body), coconut (the fiber tufts → a REVERSE-WOUND
- * zigzag CRACK band hole down the left side, face kept, circle
- * element removed), pineapple (leafy crown + pre-rotated lattice band
- * holes), pomegranate (the three round seed holes → SIX reverse-wound
- * diamond aril holes, rows 2-3-1), melon (the old stem stub → a
- * five-point star calyx hole: the reverse-wound star scar, center
- * (12,7.6)) and strawberry (the bare-top berry → a short stem rect
- * poking above the leaf crown, x 11.55..12.45 spanning y 2.6..6.2,
- * prepended as the flatPath's FIRST subpath) and the nature pair maple
- * (rounded
- * lobes, veins dropped) and fern (fiddlehead spiral band, stem/leaflets
- * re-seated) — the touched full-string constants and fragment pins below
- * were re-verified byte-for-byte against Temp/visual/probe-vt10.ts
- * (string layer) and Temp/visual/probe-vt10-react.tsx (jsdom
- * serialization for the React layer pin), and the pomegranate and melon
- * fragment pins against Temp/visual/probe-pom.ts and
- * Temp/visual/probe-melon.ts (no full-string pin exists for either), and
- * the strawberry rework pins (full string + stem fragment) against
- * Temp/visual/probe-strawberry.ts, and the FINAL coconut rework pins
- * (full string + crack-band fragment) against
- * Temp/visual/probe-coconut2.ts.
+ * VISUAL-TESTS-13 REWORK NOTE (animals): ALL TWENTY animal original modules
+ * were re-laid (recognizable species silhouettes — cat single-silhouette
+ * head+ears, dog drooping ears, bird songbird profile, fish almond body,
+ * rabbit long ears, bear muzzle patch, dragon full body, snake S-ribbon,
+ * turtle domed shell, paw real pads, horse elongated muzzle, lion jagged
+ * 12-spike mane, owl ringed eyes, fox V jaw, whale horizontal flukes, frog
+ * periscope eyes, snail target-ring shell, penguin emperor face patch,
+ * butterfly rotated wings, duck flat bill) AND 40 wildlife species joined
+ * (elephant … chameleon — see animals/index.ts's sub-barrel order). Every
+ * redrawn hole is cut EXPLICITLY by fill-rule="evenodd" at nested depth,
+ * NOT by load-bearing sweep direction. This update re-derived the animal
+ * full-string constants (cat/horse/penguin/butterfly/duck) and the animal
+ * fragment section byte-for-byte against Temp/visual/probe-animals-vt13.ts
+ * (hand-derived strings diffed against the live render), then confirmed the
+ * React-layer cat/owl/butterfly serialized pins the same way through jsdom.
+ * The key-list pin grew 108 → 148 preserving existing order (the 40
+ * additions append after 'duck'); the round-trip swaps 'duck' →
+ * 'chameleon'. The per-module complement (all 60 animals individually)
+ * lives in the NEW animals/animals.test.ts. The animal-hole triage fixes
+ * (each butterfly wing + its spot, the turtle head + eye, the snake spots,
+ * the rabbit ears/body, the snail shell/body and the bear ears now share
+ * ONE evenodd paint operation) are applied in production and re-derived
+ * below.
  *
  * VISUAL-TESTS-11 APPEND NOTE: the nature barrel gained TEN one-file-per-
  * icon entries in two subsets — LANDSCAPE (mountain/hills/river) and SKY
  * (sun/moon/cloud/stars/sunrise/rainbow/lightning) — re-exported by
  * nature/index.ts after 'sunflower' and appended to the builtins.ts map in
  * that same order (map total 98 → 108, LAST name 'sunflower' →
- * 'lightning'). This update touches ONLY the count-bearing pins: the
- * key-list pin (full 108-name array), the header cross-references and the
- * round-trip test, which now also pins 'lightning' via the registry
- * delegation identity AND the shell + ICON_LIGHTNING composition
- * (imported from nature/lightning.ts — no hand-copied full-string probe
- * pin exists for the ten new icons yet; they ARE covered by the all-icons
- * shell/delegation loop test, which iterates every
- * Object.entries(svgIcons) entry).
+ * 'lightning'). That update touched ONLY the count-bearing pins: the
+ * key-list pin, the header cross-references and the round-trip test.
  *
  * VISUAL-TESTS-12 REWORK NOTE: ALL NINETEEN fruit modules were re-laid as
  * recognizable single-color silhouettes (banana thick crescent, cherry
@@ -234,33 +194,53 @@ const FLAG =
 // geometry test below (14× `v2h2V` matches).
 const CHECKERED_FLAG =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M3 2h2v20H3zM5 3h14v8H5zM7 3v2h2V3zM11 3v2h2V3zM15 3v2h2V3zM5 5v2h2V5zM9 5v2h2V5zM13 5v2h2V5zM17 5v2h2V5zM7 7v2h2V7zM11 7v2h2V7zM15 7v2h2V7zM5 9v2h2V9zM9 9v2h2V9zM13 9v2h2V9zM17 9v2h2V9z" fill="currentColor" stroke="none"/></svg>';
-// cat (animals/cat.ts): two ear triangles each carrying an inner-ear hole
-// (reversed winding, fully above the head circle), the sweep-1 head
-// circle, the sweep-0 eye holes and reversed nose triangle, a v-first
-// mouth-line hole and four solid whisker rects (the eye/mouth winding is
-// load-bearing: they sit inside the head only, so nonzero fill cuts them;
-// ears and whiskers overlap the head as SOLID subpaths).
+// cat (animals/cat.ts, VISUAL-TESTS-13 redraw): TWO elements — the
+// single-silhouette head+ears body (wide trapezoid with bulged sides, ear
+// tips at (5,2.4)/(19,2.4), forehead dip Q12 7.2, rounded chin Q12 20.6)
+// carrying inner-ear / eye / nose / ω-mouth holes at evenodd depth 2
+// (explicit fill-rule="evenodd" — winding irrelevant), then the flatPath
+// whisker overlay (three thin bars per cheek).
 const CAT =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M6.5 2.5L11 5.5 8 9zM7.4 4.2L7.9 7 9.1 5.4zM17.5 2.5L13 5.5l3 3.5zM16.6 4.2L14.9 5.4 16.1 7zM5.5 14a6.5 6.5 0 1 1 13 0a6.5 6.5 0 1 1 -13 0zM8.2 12.6a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM13.6 12.6a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM11 15l1 1.6L13 15zM11.3 17.6v0.9h1.4v-0.9zM2.6 12.9h4v0.8h-4zM2.6 15.7h4v0.8h-4zM17.4 12.9h4v0.8h-4zM17.4 15.7h4v0.8h-4z" fill="currentColor" stroke="none"/></svg>';
-// New-animal trio — one exact full default render each (probe-verified).
-// horse (animals/horse.ts): ONE flatPath — Q-curved head/neck profile
-// drawn clockwise, two solid ear triangles + three mane triangles riding
-// the neck's back edge, sweep-0 eye/nostril holes inside head/muzzle.
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">' +
+    '<path d="M5 2.4L8.6 8.2Q12 7.2 15.4 8.2L19 2.4Q21.1 3.6 20.6 9.4Q21 13 20.2 15.2Q19.4 20.6 12 20.6Q4.6 20.6 3.8 15.2Q3 13 3.6 9.4Q3.1 4.4 5 2.4zM5.5 4.2L7.2 7.2 5.6 7.6zM18.5 4.2L16.8 7.2 18.4 7.6zM7.15 13.2a1.15 1.15 0 1 0 2.3 0a1.15 1.15 0 1 0 -2.3 0zM14.55 13.2a1.15 1.15 0 1 0 2.3 0a1.15 1.15 0 1 0 -2.3 0zM11 15.4L13 15.4 12 16.9zM10.4 17.2A0.8 0.8 0 0 1 12 17.2A0.8 0.8 0 0 1 13.6 17.2z" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '<path d="M1.4 12.4h3.2v0.6h-3.2zM1.2 14.3h3.4v0.6h-3.4zM1.6 16.2h3v0.6h-3zM19.4 12.4h3.2v0.6h-3.2zM19.4 14.3h3.4v0.6h-3.4zM19.4 16.2h3v0.6h-3z" fill="currentColor" stroke="none"/>' +
+    '</svg>';
+// New-animal trio — one exact full default render each (probe-verified
+// against the VISUAL-TESTS-13 redrawn geometry).
+// horse (animals/horse.ts): TWO elements — the evenodd head/neck profile
+// (elongated straight muzzle bridge L7.6 4.6, crown → back of head → neck
+// slanting to the base, with eye/nostril/mouth-line holes at depth 2) + the
+// flatPath ears-and-mane overlay (two solid ear triangles at the crown +
+// three jagged mane triangles riding the neck's back edge).
 const HORSE =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M9.2 5.6L9.8 2 12.4 4.4zM12.4 5L14.4 2.4 15.4 5.6zM2.4 9.6Q3 7.4 5.4 6.8L9.6 5.6Q12.6 5.2 14 7.6Q15.2 9.6 15.6 12.4L16.6 21L11.8 21L11.4 16.2Q8.2 15.8 6 13.6Q3.4 13.2 2.6 11.4Q2.2 10.4 2.4 9.6zM15.2 10.4L18.2 11 15.4 12.6zM15.8 13.4L19 14.2 16 15.8zM16.2 16.6L19.2 17.6 16.4 19zM5.65 8.6a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0zM3 10a0.5 0.5 0 1 0 1 0a0.5 0.5 0 1 0 -1 0z" fill="currentColor" stroke="none"/></svg>';
-// penguin (animals/penguin.ts): ONE flatPath — clockwise body ellipse,
-// counterclockwise belly hole, sweep-0 eye holes in the dark band ABOVE
-// the belly hole's top edge, the solid beak triangle re-filling part of
-// the belly hole, rounded-bottom feet and the two Q-curved flipper lenses.
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">' +
+    '<path d="M2 10.4Q2.2 9.4 3.4 9.2L7.6 4.6Q8.6 3.8 10 4.4L12.6 5.8Q14.4 6.8 15 9.4Q15.8 12.6 16.6 16.4L17.6 21L10.8 21Q10.6 16.8 9.6 14.6Q6.4 14 4.4 12.4Q2.4 12 2 10.4zM6.2 8.4a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0zM2.9 10.4a0.5 0.5 0 1 0 1 0a0.5 0.5 0 1 0 -1 0zM2.6 11.6h2.4v0.5h-2.4z" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '<path d="M8.2 4.6L8.6 1.2Q8.7 0.8 9.1 1.1L11.4 3.6zM11.6 4L13.6 1.6Q13.9 1.3 14 1.7L14.4 5zM14.8 8.6L18 9.2 15.2 11zM15.4 12L18.8 12.8 15.8 14.6zM16 15.6L19.4 16.6 16.4 18.2z" fill="currentColor" stroke="none"/>' +
+    '</svg>';
+// penguin (animals/penguin.ts): ONE evenodd element — clockwise body ellipse
+// (rx 6.6 ry 8.4 at (12,13.2)), counterclockwise belly window hole, the Q-
+// curved face patch hole (the dark rim around it reads as the species cap),
+// eyes/beak re-filled dark at evenodd depth 3 inside the patch, rounded-
+// bottom feet and the two Q-curved flipper lenses.
 const PENGUIN =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M5.4 13.2a6.6 8.4 0 1 1 13.2 0a6.6 8.4 0 1 1 -13.2 0zM7.9 14.2a4.1 5.9 0 1 0 8.2 0a4.1 5.9 0 1 0 -8.2 0zM8.65 8.2a0.85 0.85 0 1 0 1.7 0a0.85 0.85 0 1 0 -1.7 0zM13.65 8.2a0.85 0.85 0 1 0 1.7 0a0.85 0.85 0 1 0 -1.7 0zM11.05 10h1.9l-0.95 1.8zM8.5 20.9h2.4v0.4a1.2 1.2 0 0 1 -2.4 0zM13.1 20.9h2.4v0.4a1.2 1.2 0 0 1 -2.4 0zM5.8 11.2L6.2 17.4Q4.6 16.6 4.4 14.4Q4.2 12 5.8 11.2zM18.2 17.4L17.8 11.2Q19.4 12 19.6 14.4Q19.8 16.6 18.2 17.4z" fill="currentColor" stroke="none"/></svg>';
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M5.4 13.2a6.6 8.4 0 1 1 13.2 0a6.6 8.4 0 1 1 -13.2 0zM7.9 14.2a4.1 5.9 0 1 0 8.2 0a4.1 5.9 0 1 0 -8.2 0zM7.6 8.6Q7.6 6.4 10 6.2Q12 6 12 7.4Q12 6 14 6.2Q16.4 6.4 16.4 8.6Q16.4 10.8 12 11.6Q7.6 10.8 7.6 8.6zM9.15 8.1a0.85 0.85 0 1 0 1.7 0a0.85 0.85 0 1 0 -1.7 0zM13.15 8.1a0.85 0.85 0 1 0 1.7 0a0.85 0.85 0 1 0 -1.7 0zM11.2 9.4h1.6l-0.8 1.5zM8.5 20.9h2.4v0.4a1.2 1.2 0 0 1 -2.4 0zM13.1 20.9h2.4v0.4a1.2 1.2 0 0 1 -2.4 0zM5.8 11.2L6.2 17.4Q4.6 16.6 4.4 14.4Q4.2 12 5.8 11.2zM18.2 17.4L17.8 11.2Q19.4 12 19.6 14.4Q19.8 16.6 18.2 17.4z" fill="currentColor" stroke="none" fill-rule="evenodd"/></svg>';
 // butterfly (animals/butterfly.ts): the richest literal-element mix in the
-// set — FOUR <ellipse> wing elements (upper/lower pairs tilted ±24° via
-// the transform attribute), the counterclockwise wing-spot holes + antenna
-// wedges as one flatPath, the <rect rx> body segment and three <circle>
-// elements (head + two antenna tip dots) — pinned byte-for-byte.
+// set — FOUR rotated evenodd path wings (each wing's spot hole rides the
+// SAME d as its outer wing subpath, so every spot cuts visually), the
+// antenna flatPath, the <rect rx> body segment and three <circle> elements
+// (head + two antenna tip dots) — pinned byte-for-byte.
 const BUTTERFLY =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><ellipse cx="7.4" cy="9.2" rx="3.7" ry="4.5" transform="rotate(-24 7.4 9.2)" fill="currentColor" stroke="none"/><ellipse cx="16.6" cy="9.2" rx="3.7" ry="4.5" transform="rotate(24 16.6 9.2)" fill="currentColor" stroke="none"/><ellipse cx="8.6" cy="15.8" rx="2.9" ry="3.3" transform="rotate(24 8.6 15.8)" fill="currentColor" stroke="none"/><ellipse cx="15.4" cy="15.8" rx="2.9" ry="3.3" transform="rotate(-24 15.4 15.8)" fill="currentColor" stroke="none"/><path d="M6.3 9.2a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM15.5 9.2a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM7.5 15.8a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM14.3 15.8a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM11.3 5.6L9.9 2.6 10.7 2.3 12 5.5zM12.7 5.5L14.1 2.5 14.9 2.8 13.3 5.6z" fill="currentColor" stroke="none"/><rect x="11.25" y="7.4" width="1.5" height="11.6" rx="0.75" fill="currentColor" stroke="none"/><circle cx="12" cy="6.2" r="1.25" fill="currentColor" stroke="none"/><circle cx="10.3" cy="2.4" r="0.65" fill="currentColor" stroke="none"/><circle cx="14.5" cy="2.6" r="0.65" fill="currentColor" stroke="none"/></svg>';
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">' +
+    '<path d="M3.5 9.2a3.9 4.7 0 1 1 7.8 0a3.9 4.7 0 1 1 -7.8 0zM6.3 9.2a1.1 1.1 0 1 1 2.2 0a1.1 1.1 0 1 1 -2.2 0z" transform="rotate(-24 7.4 9.2)" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '<path d="M12.7 9.2a3.9 4.7 0 1 1 7.8 0a3.9 4.7 0 1 1 -7.8 0zM15.5 9.2a1.1 1.1 0 1 1 2.2 0a1.1 1.1 0 1 1 -2.2 0z" transform="rotate(24 16.6 9.2)" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '<path d="M5.7 15.8a2.9 3.3 0 1 1 5.8 0a2.9 3.3 0 1 1 -5.8 0zM7.5 15.8a1.1 1.1 0 1 1 2.2 0a1.1 1.1 0 1 1 -2.2 0z" transform="rotate(24 8.6 15.8)" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '<path d="M12.5 15.8a2.9 3.3 0 1 1 5.8 0a2.9 3.3 0 1 1 -5.8 0zM14.3 15.8a1.1 1.1 0 1 1 2.2 0a1.1 1.1 0 1 1 -2.2 0z" transform="rotate(-24 15.4 15.8)" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '<path d="M11.3 5.6L9.9 2.6 10.7 2.3 12 5.5zM12.7 5.5L14.1 2.5 14.9 2.8 13.3 5.6z" fill="currentColor" stroke="none"/>' +
+    '<rect x="11.25" y="7.4" width="1.5" height="11.6" rx="0.75" fill="currentColor" stroke="none"/>' +
+    '<circle cx="12" cy="6.2" r="1.25" fill="currentColor" stroke="none"/>' +
+    '<circle cx="10.3" cy="2.4" r="0.65" fill="currentColor" stroke="none"/>' +
+    '<circle cx="14.5" cy="2.6" r="0.65" fill="currentColor" stroke="none"/>' +
+    '</svg>';
 // apple (fruits/apple.ts): TWO path elements — the VISUAL-TESTS-12 rework
 // body (a literal evenodd-template shape, NOT flatPath: the wide two-lobe
 // silhouette whose shoulder curves rise to the top dimple at (12,7.4) and
@@ -297,13 +277,22 @@ const STRAWBERRY =
     '<path d="M4.4 8.2C6.1 6.8 8.8 7 12 7.7 15.2 7 17.9 6.8 19.6 8.2 22.9 11.2 17.3 20.3 12 22.5 6.7 20.3 1.1 11.2 4.4 8.2zM6.3 10.3l.4 1.9 1-.3-.4-1.9zM11.4 10.2v2h1.2v-2zM17.7 10.3l-1-.3-.4 1.9 1 .3zM8.1 14.1l.5 1.8 1.1-.3-.5-1.8zM14.8 13.8l-.5 1.8 1.1.3.5-1.8zM11.4 17.4v1.8h1.2v-1.8zM11.4 14v1.8h1.2V14z" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
     '<path d="M11.4 4.8V1.5h1.3v3.3L17 3.5 15.5 6 19 6.9 14.4 8 12 6.4 9.6 8 5 6.9 8.5 6 7 3.5z" fill="currentColor" stroke="none"/>' +
     '</svg>';
-// duck (animals/duck.ts): body + head circles drawn clockwise, solid
-// tail/bill triangles, sweep-0 eye + wing holes and two solid water ripple
-// bars under the body. Pinned here for the round-trip test below (the
-// late-alphabet ANIMAL name that proves the animals sub-barrel's
-// registration side effects fired).
+// strawberry/flower round-trip assertions use svgIcon delegation only —
+// both names sit late in their subsets, so registration must have fired.
+
+// duck (animals/duck.ts, VISUAL-TESTS-13 redraw): FOUR elements — tail
+// wedge / body circle + wing teardrop slot / head circle + eye hole
+// (three separate evenodd elements — cross-element overlap = union) + the
+// flatPath bill-and-ripples overlay. Pinned here for the round-trip test
+// (the former animals tail; still mid-block, so a wildlife insertion
+// mistake would show here).
 const DUCK =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M5.2 12L2.4 9.4 6.2 10zM3.6 15a6.2 6.2 0 1 1 12.4 0a6.2 6.2 0 1 1 -12.4 0zM10.7 7.4a3.5 3.5 0 1 1 7 0a3.5 3.5 0 1 1 -7 0zM17.5 6.2L21.9 7.5 17.5 8.8zM13.75 6.6a0.85 0.85 0 1 0 1.7 0a0.85 0.85 0 1 0 -1.7 0zM6.5 14.6a2.3 1.7 0 1 0 4.6 0a2.3 1.7 0 1 0 -4.6 0zM2.6 21.4h13.6v0.9h-13.6zM5.4 22.9h9v0.7h-9z" fill="currentColor" stroke="none"/></svg>';
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">' +
+    '<path d="M4.6 11.6L1.8 8.8Q1.2 8.2 2.2 8.3L6.8 10.4z" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '<path d="M3.4 14.8a6 6 0 1 1 12 0a6 6 0 1 1 -12 0zM6.2 14.4Q8.4 12.4 11.4 13Q12.7 13.3 12 14.7Q11.2 16.1 9.2 16Q7 15.9 6.2 14.4z" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '<path d="M10.6 7.2a3.4 3.4 0 1 1 6.8 0a3.4 3.4 0 1 1 -6.8 0zM13.35 6.4a0.85 0.85 0 1 0 1.7 0a0.85 0.85 0 1 0 -1.7 0z" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '<path d="M17 5.8Q21.8 5.5 22 7Q21.8 8.5 17 8.2zM2.6 21.2h13.6v0.9h-13.6zM5.4 22.7h9v0.7h-9z" fill="currentColor" stroke="none"/>' +
+    '</svg>';
 // New-fruit trio — one exact full default render each (probe-verified).
 // kiwi (fruits/kiwi.ts): THREE path elements — the VISUAL-TESTS-12 rework
 // replaces the old circular doughnut + float-noise seed ring: (1) the
@@ -349,11 +338,11 @@ const BLUEBERRY =
     '</svg>';
 // flower (nature/flower.ts): stem + TWO leaf lenses flatPath (the left lens
 // at y 18.6 was added by the nature detail pass), then five solid petal
-// <circle> elements on a ring around (12,8.9) plus the center disc. Pinned
-// here for the round-trip test below — 'flower' closed the map until
-// VISUAL-TESTS-8; 'sunflower' then closed it until the VISUAL-TESTS-11
-// landscape + sky appends made 'lightning' the LAST name (see SUNFLOWER
-// below and the round-trip test at the bottom).
+// <circle> elements on a ring around (12,8.9) plus the center disc. 'flower'
+// closed the map until VISUAL-TESTS-8; 'sunflower' then closed it until the
+// VISUAL-TESTS-11 landscape + sky appends made 'lightning' the LAST name
+// (see SUNFLOWER below and the round-trip test at the bottom). The
+// round-trip test pins it via svgIcon delegation only.
 const FLOWER =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M11.4 12.2h1.2v9h-1.2zM12.6 16.4c2.4-1.4 4.6-1 5.6.4-2.2 1.6-4.4 1.2-5.6-.4zM11.4 18.6c-2.4-1.4-4.6-1-5.6.4 2.2 1.6 4.4 1.2 5.6-.4z" fill="currentColor" stroke="none"/><circle cx="12" cy="5.6" r="2.3" fill="currentColor" stroke="none"/><circle cx="15.4" cy="8" r="2.3" fill="currentColor" stroke="none"/><circle cx="14.1" cy="12" r="2.3" fill="currentColor" stroke="none"/><circle cx="9.9" cy="12" r="2.3" fill="currentColor" stroke="none"/><circle cx="8.6" cy="8" r="2.3" fill="currentColor" stroke="none"/><circle cx="12" cy="9" r="2.1" fill="currentColor" stroke="none"/></svg>';
 // sunflower (nature/sunflower.ts): ONE flatPath — the TWELVE thin ray wedges
@@ -362,12 +351,11 @@ const FLOWER =
 // runtime value kept verbatim, e.g. the bottom ray closes at `L12 9.128z`),
 // the r-3.6 disc over the wedge bases, the FIVE counterclockwise seed-dot
 // holes (four on the r 1.9 ring + the center dot), stem, both leaf lenses
-// and the ground line. Pinned here for the round-trip test below —
-// 'sunflower' WAS the VERY LAST name in the 98-name map (VISUAL-TESTS-8),
-// so the nature sub-barrel's registration side effects must have fired
-// for it to resolve at all; VISUAL-TESTS-11 appended the landscape + sky
-// subsets after it and 'lightning' is now the LAST name (the round-trip
-// test below pins that too).
+// and the ground line. 'sunflower' WAS the VERY LAST name in the 98-name
+// map (VISUAL-TESTS-8), so the nature sub-barrel's registration side
+// effects must have fired for it to resolve at all; VISUAL-TESTS-11
+// appended the landscape + sky subsets after it and 'lightning' is now the
+// LAST name (the round-trip test below pins that too).
 const SUNFLOWER =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M12 7L17.6 7L14.128 7zM12 7L16.85 9.8L13.843 8.064zM12 7L14.8 11.85L13.064 8.843zM12 7L12 12.6L12 9.128zM12 7L9.2 11.85L10.936 8.843zM12 7L7.15 9.8L10.157 8.064zM12 7L6.4 7L9.872 7zM12 7L7.15 4.2L10.157 5.936zM12 7L9.2 2.15L10.936 5.157zM12 7L12 1.4L12 4.872zM12 7L14.8 2.15L13.064 5.157zM12 7L16.85 4.2L13.843 5.936zM8.4 7a3.6 3.6 0 1 1 7.2 0a3.6 3.6 0 1 1 -7.2 0zM9.95 7a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM11.35 9.1a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM13.65 7a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM11.35 4.9a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM11.3 7a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM11.4 10.8h1.2v10.4h-1.2zM12.6 15.4c2.4-1.4 4.6-1 5.6.4-2.2 1.6-4.4 1.2-5.6-.4zM11.4 18.2c-2.4-1.4-4.6-1-5.6.4 2.2 1.6 4.4 1.2 5.6-.4zM4.4 21.2h15.2v1h-15.2z" fill="currentColor" stroke="none"/></svg>';
 
@@ -382,16 +370,18 @@ const SUNFLOWER =
 const FLAT_ELEMENT_ATTRS = 'fill="currentColor" stroke="none"';
 
 describe('svgIcons built-in set', () => {
-    it('exposes exactly the 108 built-in registry names, in registration order', () => {
-        // Generic 23, then fantasy 10, then flags 8, animals 20, fruits 19,
+    it('exposes exactly the 148 built-in registry names, in registration order', () => {
+        // Generic 23, then fantasy 10, then flags 8, animals 60, fruits 19,
         // nature 28 — the exact object-literal order in builtins.ts
         // (appending is the only safe evolution; the ui/gallery and
         // VisualIcon/data-icon resolve through these same keys). The
-        // animals block lists the 10 reworked originals first, then the 10
-        // additions; the fruits block follows fruits/index.ts's sub-barrel
-        // order (the original ten first, then the nine 2026 additions —
-        // VISUAL-TESTS-12 re-laid all 19 without touching the order); the
-        // nature block lists the 12
+        // animals block lists the 20 redrawn originals first (cat → duck),
+        // then the 40 wildlife additions (VISUAL-TESTS-13) in
+        // animals/index.ts's sub-barrel order — chameleon is the animals
+        // tail, immediately before 'apple'; the fruits block follows
+        // fruits/index.ts's sub-barrel order (the original ten first, then
+        // the nine 2026 additions — VISUAL-TESTS-12 re-laid all 19 without
+        // touching the order); the nature block lists the 12
         // detail-passed originals with the four tree additions
         // (appleTree/cherryTree/redwood/spruce) between 'willow' and
         // 'bush' and the two bloom additions (tulip/sunflower) after
@@ -460,6 +450,49 @@ describe('svgIcons built-in set', () => {
             'penguin',
             'butterfly',
             'duck',
+            // ── animals: the 40 VISUAL-TESTS-13 wildlife additions ─────────
+            // appended after 'duck' in animals/index.ts's sub-barrel order —
+            // chameleon CLOSES the animals block immediately before 'apple'
+            'elephant',
+            'giraffe',
+            'zebra',
+            'rhinoceros',
+            'hippopotamus',
+            'monkey',
+            'gorilla',
+            'panda',
+            'koala',
+            'kangaroo',
+            'deer',
+            'moose',
+            'wolf',
+            'tiger',
+            'cow',
+            'pig',
+            'sheep',
+            'goat',
+            'camel',
+            'donkey',
+            'bat',
+            'eagle',
+            'parrot',
+            'flamingo',
+            'swan',
+            'chicken',
+            'rooster',
+            'peacock',
+            'ostrich',
+            'shark',
+            'dolphin',
+            'octopus',
+            'squid',
+            'jellyfish',
+            'crab',
+            'lobster',
+            'seahorse',
+            'crocodile',
+            'lizard',
+            'chameleon',
             // ── fruits ──────────────────────────────────────────────────────
             'apple',
             'banana',
@@ -556,12 +589,13 @@ describe('svgIcons built-in set', () => {
         expect(svgIcons.crown()).toBe(CROWN);
     });
 
-    it('pins the exact full output strings for one icon per new subset: flag, checkeredFlag, cat, apple, watermelon', () => {
+    it('pins the exact full output strings for one icon per themed subset: flag, checkeredFlag, cat, apple, watermelon', () => {
         // flags: plain rect flag and the winding-sensitive checkered flag
         expect(svgIcons.flag()).toBe(FLAG);
         expect(svgIcons.checkeredFlag()).toBe(CHECKERED_FLAG);
-        // animals: cat — inner-ear + sweep-0 eye/nose/mouth holes inside
-        // the sweep-1 head circle, plus the solid whisker rects
+        // animals: cat — the VISUAL-TESTS-13 redraw single-silhouette
+        // head+ears body with inner-ear/eye/nose/ω-mouth holes (explicit
+        // evenodd) + the separate whisker flatPath
         expect(svgIcons.cat()).toBe(CAT);
         // fruits: apple (the VISUAL-TESTS-12 rework: evenodd two-lobe body
         // rising to the (12,7.4) top dimple with the left highlight hole +
@@ -572,16 +606,17 @@ describe('svgIcons built-in set', () => {
         expect(svgIcons.watermelon()).toBe(WATERMELON);
     });
 
-    it('pins the exact full output strings for the new animals: horse, penguin, butterfly', () => {
-        // horse: single flatPath (clockwise head/neck profile with Q
-        // curves, solid ears + mane triangles, sweep-0 eye/nostril holes)
+    it('pins the exact full output strings for the redrawn animals: horse, penguin, butterfly', () => {
+        // horse: TWO elements (the evenodd head/neck profile with the
+        // elongated straight muzzle + eye/nostril/mouth holes, then the
+        // flatPath ears + three-jagged-mane overlay)
         expect(svgIcons.horse()).toBe(HORSE);
-        // penguin: single flatPath (clockwise body ellipse + sweep-0
-        // belly/eye holes + solid beak re-filling the belly + flippers)
+        // penguin: ONE evenodd element (clockwise body ellipse + belly/face
+        // holes + depth-3 eye/beak re-fills + feet + flippers)
         expect(svgIcons.penguin()).toBe(PENGUIN);
-        // butterfly: mixed literal elements — four <ellipse transform>
-        // wings + the spot-hole/antenna flatPath + <rect rx> body +
-        // <circle> head and antenna tip dots
+        // butterfly: SIX elements — four rotated evenodd PATH wings (each
+        // carries its own spot hole in the same d), the antenna flatPath,
+        // the <rect rx> body and the <circle> head + two antenna tip dots
         expect(svgIcons.butterfly()).toBe(BUTTERFLY);
     });
 
@@ -649,122 +684,266 @@ describe('svgIcons built-in set', () => {
         );
         expect(svgIcons.bunting()).toContain('M16 5h5l-2.5 6z');
 
-        // ── animals subset — REWORKED originals (detail pass) ─────────────
-        // cat: left ear triangle + nose hole + ONE eye hole with BOTH arcs
-        // sweep-0 (`1 0`) — sweep-0 is the counterclockwise winding that
-        // makes nonzero fill cut the eye out of the clockwise head; a
-        // sweep-1 eye would fill solid.
-        expect(svgIcons.cat()).toContain('M6.5 2.5L11 5.5 8 9z');
-        expect(svgIcons.cat()).toContain('M11 15l1 1.6L13 15z');
-        expect(svgIcons.cat()).toContain('M8.2 12.6a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0z');
-        // cat detail: the inner-ear hole (reversed winding, fully above the
-        // head circle), the LEFT whisker pair and the v-first mouth-line
-        // hole below the nose
-        expect(svgIcons.cat()).toContain('M7.4 4.2L7.9 7 9.1 5.4z');
-        expect(svgIcons.cat()).toContain('M2.6 12.9h4v0.8h-4zM2.6 15.7h4v0.8h-4z');
-        expect(svgIcons.cat()).toContain('M11.3 17.6v0.9h1.4v-0.9z');
-        // dog: floppy ear with the sweep-1 rounded bottom, the thin
-        // inner-ear hole kept clear of the head circle, and the sweep-0 eye
-        // hole (same load-bearing winding pattern as the cat's eyes)
-        expect(svgIcons.dog()).toContain('M2.6 6.4h4.6v8.9a2.3 2.3 0 0 1 -4.6 0z');
-        expect(svgIcons.dog()).toContain('M3.3 7.6v6.6h1.5v-6.6z');
-        expect(svgIcons.dog()).toContain('M8.35 10.4a1.05 1.05 0 1 0 2.1 0a1.05 1.05 0 1 0 -2.1 0z');
-        // rabbit: upright rounded ear + inner-ear hole + LEFT whisker pair
-        // + sweep-0 eye hole
-        expect(svgIcons.rabbit()).toContain('M8 1.5h2.8v8.6a1.4 1.4 0 0 1 -2.8 0z');
-        expect(svgIcons.rabbit()).toContain('M8.7 2.6v6.4h1.4v-6.4z');
-        expect(svgIcons.rabbit()).toContain('M4.2 14.4h3.8v0.7h-3.8zM4.2 16h3.8v0.7h-3.8z');
-        expect(svgIcons.rabbit()).toContain('M8.3 14.2a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0z');
-        // bird: crest triangle on the head's top edge + the two legs and
-        // the two feet bars (each contiguous pair pinned verbatim)
-        expect(svgIcons.bird()).toContain('M14.2 5.4L14.6 2.6 16.4 4.4z');
-        expect(svgIcons.bird()).toContain('M9.7 19.4h0.9v2.8h-0.9zM12.4 19.4h0.9v2.8h-0.9z');
-        expect(svgIcons.bird()).toContain('M9.25 22.2h1.8v0.6h-1.8zM11.95 22.2h1.8v0.6h-1.8z');
-        // fish: dorsal fin triangle + EXACTLY two solid bubble <circle>
-        // elements above the tail (larger one pinned verbatim)
-        expect(svgIcons.fish()).toContain('M9 8.4L11.6 4.6 14.2 8.4z');
-        expect(svgIcons.fish().match(/<circle /g)).toEqual(['<circle ', '<circle ']);
-        expect(svgIcons.fish()).toContain('<circle cx="20.8" cy="6.6" r="0.7"');
-        // bear: the two solid ear <circle> elements + a concentric sweep-0
-        // inner-ear hole path riding on top of them
-        expect(svgIcons.bear().match(/<circle /g)).toEqual(['<circle ', '<circle ']);
-        expect(svgIcons.bear()).toContain('<circle cx="6.8" cy="7.2" r="2.6"');
-        expect(svgIcons.bear()).toContain('M5.85 7.2a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0z');
-        // dragon: two horns, the two neck spikes on the back edge and the
-        // sweep-0 nostril hole inside the upper jaw band
-        expect(svgIcons.dragon()).toContain('M5.6 6.8L3.6 2.6 8.8 5.4z');
-        expect(svgIcons.dragon()).toContain('M9.6 6.2L9.2 2 13.2 4.8z');
-        expect(svgIcons.dragon()).toContain('M3.4 8.2L1.8 8.6 3.4 9.4zM3.4 10.6L1.8 11 3.4 11.8z');
-        expect(svgIcons.dragon()).toContain('M20.05 10.4a0.55 0.55 0 1 0 1.1 0a0.55 0.55 0 1 0 -1.1 0z');
-        // snake: the MIRRORED bottom edge of the constant-thickness S
-        // ribbon (c/s curves with negated y offsets — the mirrored return
-        // path), EXACTLY two ribbon copies (the pinch-free union), the
-        // sweep-1 head circle overlapping the ribbon's right end, EXACTLY
-        // three sweep-0 spot holes and the forked-tongue bar pair
-        expect(svgIcons.snake()).toContain('c-2.6 2.6-5.4 2.6-8 0s-5.4-2.6-8 0z');
-        expect(svgIcons.snake().match(/c-2\.6 2\.6-5\.4 2\.6-8 0s-5\.4-2\.6-8 0z/g)).toEqual(
-            new Array(2).fill('c-2.6 2.6-5.4 2.6-8 0s-5.4-2.6-8 0z')
+        // ── animals subset — REDRAWN originals (VISUAL-TESTS-13) ──────────
+        // cat: the single-silhouette head+ears body (ear tips, forehead dip,
+        // rounded chin) + the LEFT inner-ear / nose / ω-mouth hole
+        // fragments verbatim + the evenodd attribute (explicit, winding
+        // irrelevant) + the whisker overlay
+        expect(svgIcons.cat()).toContain('M5 2.4L8.6 8.2Q12 7.2 15.4 8.2L19 2.4Q21.1 3.6 20.6 9.4');
+        expect(svgIcons.cat()).toContain('M5.5 4.2L7.2 7.2 5.6 7.6zM18.5 4.2L16.8 7.2 18.4 7.6z');
+        expect(svgIcons.cat()).toContain(
+            'M11 15.4L13 15.4 12 16.9zM10.4 17.2A0.8 0.8 0 0 1 12 17.2A0.8 0.8 0 0 1 13.6 17.2z'
         );
-        expect(svgIcons.snake()).toContain('M17.1 13.8a2.5 2.5 0 1 1 5 0a2.5 2.5 0 1 1 -5 0z');
-        expect(svgIcons.snake().match(/a0\.55 0\.55 0 1 0 1\.1 0/g)).toEqual(
-            new Array(3).fill('a0.55 0.55 0 1 0 1.1 0')
+        expect(svgIcons.cat()).toContain('M1.4 12.4h3.2v0.6h-3.2zM1.2 14.3h3.4v0.6h-3.4zM1.6 16.2h3v0.6h-3z');
+        expect(svgIcons.cat().match(/fill-rule="evenodd"/g)).toEqual(new Array(1).fill('fill-rule="evenodd"'));
+        // dog: drooping-ear lobes rooted INSIDE the head outline (Q-rounded
+        // bottom cap), the thin inner-ear slots clear of the head circle and
+        // the light muzzle patch hole with the dark nose + mouth re-fills —
+        // TWO evenodd elements (face + ears), no <circle>
+        expect(svgIcons.dog()).toContain(
+            'M10.6 8.2Q8.4 6.8 6 7.6Q3.6 8.6 2.8 11.4Q2.2 14.4 4 16.6Q5.6 18.2 7.4 17.2Q8.8 16.2 9.2 13.4Q9.6 10.6 10.6 8.2z'
         );
-        expect(svgIcons.snake()).toContain('M22.2 13.2h1.5v0.5h-1.5zM22.2 14h1.5v0.5h-1.5z');
-        // turtle: the v-first rim-line hole separating shell plates from
-        // the body, the tail triangle at the shell's left base and the
-        // head's sweep-0 eye hole (separate flatPath after the head circle)
-        expect(svgIcons.turtle()).toContain('M5 13.7v0.8h13v-0.8z');
-        expect(svgIcons.turtle()).toContain('M3.5 15.2L1.5 16.4 3.5 17.2z');
-        expect(svgIcons.turtle()).toContain('M21.35 12.7a0.5 0.5 0 1 0 1 0a0.5 0.5 0 1 0 -1 0z');
+        expect(svgIcons.dog()).toContain('M4.2 10.2v5h1.4v-5z');
+        expect(svgIcons.dog()).toContain('M18.4 10.2v5h1.4v-5z');
+        expect(svgIcons.dog()).toContain(
+            'M9.3 16a2.7 2.1 0 1 0 5.4 0a2.7 2.1 0 1 0 -5.4 0zM10.9 14.9L13.1 14.9 12 16.4zM11.7 16.7v1.1h0.6v-1.1z'
+        );
+        expect(svgIcons.dog().match(/fill-rule="evenodd"/g)).toEqual(new Array(2).fill('fill-rule="evenodd"'));
+        // rabbit: the long rounded-band ears with tall inner-ear slots
+        // (left pair verbatim) + the head circle + the eye/nose/philtrum/ω
+        // mouth holes — TWO evenodd elements (ears + body — cross-element
+        // overlap unions at the ear roots instead of XOR-punching seams) +
+        // the whisker overlay
+        expect(svgIcons.rabbit()).toContain('M5.8 3.2Q5.8 1.4 7.8 1.4Q9.8 1.4 9.8 3.2L9.8 12L5.8 12zM6.9 3v6.6h1.8V3z');
+        expect(svgIcons.rabbit()).toContain('M6.1 15.4a5.9 5.9 0 1 1 11.8 0a5.9 5.9 0 1 1 -11.8 0z');
+        expect(svgIcons.rabbit()).toContain(
+            'M11.1 16.6h1.8l-0.9 1.4zM11.7 18.4v0.9h0.6v-0.9zM10.55 19.9A0.55 0.55 0 0 1 11.65 19.9A0.55 0.55 0 0 1 12.75 19.9z'
+        );
+        expect(svgIcons.rabbit()).toContain(
+            'M3.2 14.4h2.8v0.55h-2.8zM3.2 16.1h2.8v0.55h-2.8zM18 14.4h2.8v0.55h-2.8zM18 16.1h2.8v0.55h-2.8z'
+        );
+        expect(svgIcons.rabbit().match(/fill-rule="evenodd"/g)).toEqual(new Array(2).fill('fill-rule="evenodd"'));
+        // bird: songbird profile — head circle + near-beak eye hole, body
+        // ellipse + folded-wing leaf slot, the two crest plumes, the short
+        // thick beak wedge, the two up-left tail feathers and the legs/feet
+        // pairs (each contiguous pair pinned verbatim) — TWO evenodd
+        // elements, no <circle>
+        expect(svgIcons.bird()).toContain('M12.3 8.4a3.3 3.3 0 1 1 6.6 0a3.3 3.3 0 1 1 -6.6 0z');
+        expect(svgIcons.bird()).toContain('M15.45 7.9a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0z');
+        expect(svgIcons.bird()).toContain(
+            'M4.5 14.4a5.9 4.5 0 1 1 11.8 0a5.9 4.5 0 1 1 -11.8 0zM7.6 14.4Q9.6 12.6 12.6 13Q13.9 13.2 13.2 14.6Q12.4 16 10.4 16Q8.2 16 7.6 14.4z'
+        );
+        expect(svgIcons.bird()).toContain('M13.8 6Q13.2 3.2 14.6 1.8Q14.9 1.6 15 2L15.4 5.4zM15.8 5.2Q16 2.6 17.6 1.6Q18 1.5 17.9 2L17.6 6z');
+        expect(svgIcons.bird()).toContain('M18.6 7.4L21.9 9.2 18.5 10.6z');
+        expect(svgIcons.bird()).toContain('M5.8 13.4L2.4 9Q1.8 8.2 2.8 8.4L7 11.2zM5.8 15L2.2 12.6Q1.6 12.2 2.4 11.8L6.8 13.6z');
+        expect(svgIcons.bird()).toContain('M9.6 18.5h0.9v2.3h-0.9zM12.3 18.5h0.9v2.3h-0.9zM9.1 20.8h2v0.6h-2zM11.9 20.8h2v0.6h-2z');
+        expect(svgIcons.bird().match(/fill-rule="evenodd"/g)).toEqual(new Array(2).fill('fill-rule="evenodd"'));
+        // fish: almond body + eye hole + gill crescent slot in ONE evenodd
+        // element, the curved dorsal fin, the forked two-lobe tail with the
+        // pinch notch, the pectoral fin and EXACTLY three solid bubble
+        // <circle> elements (largest one verbatim)
+        expect(svgIcons.fish()).toContain(
+            'M2.2 12.6Q4.4 9 8.4 8.6Q13 8.2 16.4 10.6L16.4 15Q13 17.4 8.4 17Q4.4 16.6 2.2 12.6z'
+        );
+        expect(svgIcons.fish()).toContain(
+            'M4.4 11.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0zM9 9.9A3.3 3.3 0 0 0 9 15.3A2.7 3.3 0 0 1 9 9.9z'
+        );
+        expect(svgIcons.fish()).toContain('M15.8 10.6L20.6 7Q21.7 6.4 21.4 7.6L20.1 11.5Q19.9 12.6 20.1 13.7L21.4 17.6Q21.7 18.8 20.6 18.2L15.8 15z');
+        expect(svgIcons.fish().match(/<circle /g)).toEqual(['<circle ', '<circle ', '<circle ']);
+        expect(svgIcons.fish()).toContain('<circle cx="3.4" cy="8.4" r="0.55"');
+        // bear: head circle + eye/muzzle-patch holes + nose/mouth re-fills
+        // in ONE evenodd element + the SEPARATE ear evenodd element (both
+        // outer-ear circle pairs and their r-0.8 inner-ear holes share ONE
+        // paint operation — left outer/hole pair verbatim; EXACTLY two
+        // evenodd elements and NO <circle> remain, the null match is the
+        // exact absence assertion)
+        expect(svgIcons.bear()).toContain('M4.4 13.2a7.6 7.6 0 1 1 15.2 0a7.6 7.6 0 1 1 -15.2 0z');
+        expect(svgIcons.bear()).toContain(
+            'M8.1 11.6a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0zM14 11.6a0.95 0.95 0 1 0 1.9 0a0.95 0.95 0 1 0 -1.9 0z'
+        );
+        expect(svgIcons.bear()).toContain(
+            'M8.7 16.9a3.3 2.5 0 1 0 6.6 0a3.3 2.5 0 1 0 -6.6 0zM10.5 15.5a1.5 1.1 0 1 0 3 0a1.5 1.1 0 1 0 -3 0zM11.7 17.2v2h0.6v-2z'
+        );
+        expect(svgIcons.bear()).toContain(
+            'M4.2 7a2.7 2.7 0 1 1 5.4 0a2.7 2.7 0 1 1 -5.4 0zM5.1 5.8a.8 .8 0 1 1 1.6 0a.8 .8 0 1 1 -1.6 0zM14.4 7a2.7 2.7 0 1 1 5.4 0a2.7 2.7 0 1 1 -5.4 0zM17.3 5.8a.8 .8 0 1 1 1.6 0a.8 .8 0 1 1 -1.6 0z'
+        );
+        expect(svgIcons.bear().match(/<circle /g)).toBeNull();
+        expect(svgIcons.bear().match(/fill-rule="evenodd"/g)).toEqual(new Array(2).fill('fill-rule="evenodd"'));
+        // dragon: full body — horned head (crown → open jaw → throat), eye +
+        // nostril holes, the two horn spikes, the fang, the serpentine
+        // chest, the curled tail, the two feet claws and the bat wing with
+        // its membrane slot — TWO evenodd elements (head + wing)
+        expect(svgIcons.dragon()).toContain(
+            'M9 4.6Q10 3.8 11.6 4Q15 4.4 18 6.6Q20.8 8.4 21.8 9.4L21.7 10.9Q19.4 11.5 17 11L17.2 11.8L20.4 13.4L20 14.8Q17 14.2 14.6 15.2Q12.6 16 11 16L8.6 16.6L7.4 8z'
+        );
+        expect(svgIcons.dragon()).toContain('M11.7 7a1 1 0 1 0 2 0a1 1 0 1 0 -2 0zM19.5 8.5a0.5 0.5 0 1 0 1 0a0.5 0.5 0 1 0 -1 0z');
+        expect(svgIcons.dragon()).toContain(
+            'M9.2 14.2Q7.4 16 7.8 18.4Q8.2 20.8 10.8 21L16.2 21Q17.6 19.4 17.2 17Q16.8 14.6 14.8 13.6Q11.8 12.6 9.2 14.2z'
+        );
+        expect(svgIcons.dragon()).toContain('M9.2 20.6h1.6v1.3h-1.6zM13.4 20.8h1.6v1.1h-1.6z');
+        expect(svgIcons.dragon()).toContain('M10.5 16L2 5.6Q2.7 10 1.5 13Q4.1 11.8 5.2 15.2Q7 13.7 8.3 18zM8.7 14.7L3.5 8.8 8 15.3z');
+        expect(svgIcons.dragon().match(/fill-rule="evenodd"/g)).toEqual(new Array(2).fill('fill-rule="evenodd"'));
+        // snake: the smooth S-ribbon (C curves top and mirrored bottom),
+        // the ovoid blunt-snouted head overlapping the ribbon's right end
+        // ACROSS elements (union, no same-element XOR), the head's eye
+        // hole, the THREE spot holes MERGED INTO the ribbon's d (one evenodd
+        // paint operation — spots can never be opaque circles over a filled
+        // ribbon) and the forked-tongue bar pair — THREE evenodd elements
+        // (ribbon+spots / head / tongue is the flatPath overlay)
+        expect(svgIcons.snake()).toContain(
+            'M1.6 10.8C4.4 7.2 7.6 7.2 10.2 10.4C12.8 13.6 16 13.6 18.8 10.8L18.8 14.4C16 17.2 12.8 17.2 10.2 14C7.6 10.8 4.4 10.8 1.6 14.4zM3.8 12.2a0.55 0.55 0 1 0 1.1 0a0.55 0.55 0 1 0 -1.1 0zM8.2 10.7a0.55 0.55 0 1 0 1.1 0a0.55 0.55 0 1 0 -1.1 0zM13.6 14.9a0.55 0.55 0 1 0 1.1 0a0.55 0.55 0 1 0 -1.1 0z'
+        );
+        expect(svgIcons.snake()).toContain('M16.8 9.9Q21 9 22.2 11Q22.6 12 21.9 13.2Q20.3 15.3 16.8 14.4zM19.4 11.3a0.85 0.85 0 1 0 1.7 0a0.85 0.85 0 1 0 -1.7 0z');
+        expect(svgIcons.snake()).toContain('M22.2 11.8L23.5 10.6 23.7 10.9 22.5 12.1zM22.3 12.2L23.7 13.3 23.5 13.6 22.2 12.5z');
+        expect(svgIcons.snake().match(/fill-rule="evenodd"/g)).toEqual(new Array(2).fill('fill-rule="evenodd"'));
+        // turtle: the domed shell (flat chord at y 15.4) + plate spots + rim
+        // band hole in ONE evenodd element, the rounded-bottom legs + tail
+        // wedge flatPath, and the head/eye pair sharing ONE evenodd paint
+        // operation (the eye hole rides the head's own d — the old opaque
+        // head <circle> + trailing eye flatPath is gone)
+        expect(svgIcons.turtle()).toContain('M2.8 15.4a8.7 7.4 0 0 1 17.4 0z');
+        expect(svgIcons.turtle()).toContain(
+            'M5.4 13a1 1 0 1 0 2 0a1 1 0 1 0 -2 0zM9.4 11.6a1 1 0 1 0 2 0a1 1 0 1 0 -2 0zM13.4 13a1 1 0 1 0 2 0a1 1 0 1 0 -2 0z'
+        );
+        expect(svgIcons.turtle()).toContain('M4.2 13.9v0.75h15.2v-0.75z');
+        expect(svgIcons.turtle()).toContain('M5.2 15.4h2.6v3.1a1.3 1.3 0 0 1 -2.6 0zM14.2 15.4h2.6v3.1a1.3 1.3 0 0 1 -2.6 0z');
+        expect(svgIcons.turtle()).toContain('M3.4 15.4L1.4 16.6 3.4 17.4z');
+        expect(svgIcons.turtle()).toContain('M18.7 13.6a2.3 2.3 0 1 1 4.6 0a2.3 2.3 0 1 1 -4.6 0zM21.3 13.3a.5 .5 0 1 1 1 0a.5 .5 0 1 1 -1 0z');
+        expect(svgIcons.turtle().match(/<circle /g)).toBeNull();
+        expect(svgIcons.turtle().match(/fill-rule="evenodd"/g)).toEqual(new Array(2).fill('fill-rule="evenodd"'));
+        // paw: the bilobed palm bean (Q-shoulders + heel lobes) + EXACTLY
+        // four solid rotated teardrop <ellipse> pads — the gaps between pads
+        // stay negative space (cross-element union, no same-element XOR)
+        expect(svgIcons.paw()).toContain(
+            'M12 12.8Q16.6 12.8 17.1 16.2Q17.6 18.9 16.1 20.5Q14.4 22 12 21.9Q9.6 22 7.9 20.5Q6.4 18.9 6.9 16.2Q7.4 12.8 12 12.8z'
+        );
+        expect(svgIcons.paw().match(/<ellipse /g)).toEqual(new Array(4).fill('<ellipse '));
+        expect(svgIcons.paw()).toContain('<ellipse cx="5" cy="10.9" rx="1.9" ry="2.4" transform="rotate(-24 5 10.9)"');
 
-        // ── animals subset — the ten NEW animals ───────────────────────────
-        // horse: the Q-curved head/neck profile (single clockwise outline
-        // from the muzzle tip to the base) + one mane triangle verbatim
+        // ── animals subset — the 2019-Addition block (horse … duck),
+        // redrawn in VISUAL-TESTS-13 ─────────────────────────────────────
+        // horse: the Q-curved head/neck profile (elongated straight muzzle
+        // bridge from the muzzle tip to the forehead) + the mane triangles
+        // verbatim
         expect(svgIcons.horse()).toContain(
-            'M2.4 9.6Q3 7.4 5.4 6.8L9.6 5.6Q12.6 5.2 14 7.6Q15.2 9.6 15.6 12.4L16.6 21L11.8 21L11.4 16.2Q8.2 15.8 6 13.6Q3.4 13.2 2.6 11.4Q2.2 10.4 2.4 9.6z'
+            'M2 10.4Q2.2 9.4 3.4 9.2L7.6 4.6Q8.6 3.8 10 4.4L12.6 5.8Q14.4 6.8 15 9.4Q15.8 12.6 16.6 16.4L17.6 21L10.8 21Q10.6 16.8 9.6 14.6Q6.4 14 4.4 12.4Q2.4 12 2 10.4z'
         );
-        expect(svgIcons.horse()).toContain('M15.2 10.4L18.2 11 15.4 12.6z');
-        // lion: EXACTLY eight r-2.9 scallop <circle> elements on the r 7.2
-        // mane ring (first scallop pinned verbatim) + the r-6.6 face circle
-        expect(svgIcons.lion().match(/<circle /g)).toEqual(new Array(8).fill('<circle '));
-        expect(svgIcons.lion()).toContain('<circle cx="19.2" cy="12" r="2.9"');
-        expect(svgIcons.lion()).toContain('M5.4 12a6.6 6.6 0 1 1 13.2 0');
-        // owl: sweep-0 eye-RING holes with solid pupil dots re-filling each
-        // ring's center (the dots are separate <circle> elements AFTER the
-        // hole path, so both survive verbatim)
-        expect(svgIcons.owl()).toContain('M6.8 11a2.3 2.3 0 1 0 4.6 0a2.3 2.3 0 1 0 -4.6 0z');
-        expect(svgIcons.owl()).toContain('<circle cx="9.1" cy="11" r="1"');
-        expect(svgIcons.owl()).toContain('<circle cx="14.9" cy="11" r="1"');
-        // fox: the Q-rounded brow corners of the clockwise head outline
-        // (chin → cheeks → brows → close)
+        expect(svgIcons.horse()).toContain('M14.8 8.6L18 9.2 15.2 11zM15.4 12L18.8 12.8 15.8 14.6zM16 15.6L19.4 16.6 16.4 18.2z');
+        // lion: the jagged 12-spike mane star (outer/inner radii jittered ±4°
+        // — verbatim), the r-6.4 face disc as an evenodd hole inside it, the
+        // depth-3 dark features and the ear bumps on the face's top edge in
+        // the SECOND evenodd element — NO <circle> elements (the old 8-scallop
+        // circle mane is gone)
+        expect(svgIcons.lion()).toContain(
+            'M1.9 12.2L4.66 10.23L4.29 7L7.28 6.77L6.5 3.73L9.59 4.78L12.33 2.81L14.16 5.12L16.38 3.21L16.99 6.46L20.29 7.98L19.04 10.7L22.09 11.85L19.6 13.95L19.79 17.46L16.99 17.94L17.45 20.59L14.22 19.05L11.68 21.49L9.84 19.28L7.57 21.28L7.01 17.94L3.62 16.47L4.37 13.82z'
+        );
+        expect(svgIcons.lion()).toContain('M5.6 12.2a6.4 6.4 0 1 0 12.8 0a6.4 6.4 0 1 0 -12.8 0z');
+        expect(svgIcons.lion()).toContain(
+            'M10.9 13.7h2.2l-1.1 1.7zM11.7 15.6v1.2h0.6v-1.2zM10.35 17.4A0.65 0.65 0 0 1 11.65 17.4A0.65 0.65 0 0 1 12.95 17.4A0.65 0.65 0 0 1 14.25 17.4z'
+        );
+        expect(svgIcons.lion()).toContain('M5.8 7.1a1.5 1.5 0 1 1 3 0a1.5 1.5 0 1 1 -3 0zM6.55 7.1a0.75 0.75 0 1 0 1.5 0a0.75 0.75 0 1 0 -1.5 0z');
+        expect(svgIcons.lion()).toContain('M15.2 7.1a1.5 1.5 0 1 1 3 0a1.5 1.5 0 1 1 -3 0zM15.95 7.1a0.75 0.75 0 1 0 1.5 0a0.75 0.75 0 1 0 -1.5 0z');
+        expect(svgIcons.lion().match(/<circle /g)).toBeNull();
+        expect(svgIcons.lion().match(/fill-rule="evenodd"/g)).toEqual(new Array(2).fill('fill-rule="evenodd"'));
+        // owl: sharp ear tufts, the egg body (narrow top Q to the wider
+        // base), the TWO r-2.4 eye-ring holes with solid pupil dots
+        // re-centered inside (the dots are separate <circle> elements AFTER
+        // the hole path, so both survive verbatim), the beak + belly
+        // chevron holes and the rounded feet
+        expect(svgIcons.owl()).toContain('M6.6 8L4.6 2.6Q4.5 2.2 5 2.4L10 5.2zM17.4 8L19.4 2.6Q19.5 2.2 19 2.4L14 5.2z');
+        expect(svgIcons.owl()).toContain('M12 4.8Q18.6 4.8 18.6 12L18.6 18Q18.6 20.8 15.8 20.8L8.2 20.8Q5.4 20.8 5.4 18L5.4 12Q5.4 4.8 12 4.8z');
+        expect(svgIcons.owl()).toContain('M6.9 10.9a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0zM12.3 10.9a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0z');
+        expect(svgIcons.owl()).toContain('<circle cx="9.3" cy="10.9" r="1.05"');
+        expect(svgIcons.owl()).toContain('<circle cx="14.7" cy="10.9" r="1.05"');
+        expect(svgIcons.owl()).toContain(
+            'M11.15 13.9l0.85 2.2 0.85-2.2zM8.15 17l0.85 1.3 0.85-1.3zM11.15 17l0.85 1.3 0.85-1.3zM14.15 17l0.85 1.3 0.85-1.3zM8.5 20.7h1.9v0.4a0.95 0.95 0 0 1 -1.9 0zM13.6 20.7h1.9v0.4a0.95 0.95 0 0 1 -1.9 0z'
+        );
+        // fox: the tall ear triangles + inner-ear holes near the tips, the
+        // Q-rounded brow corners of the head outline and the flatPath chin
+        // wedge completing the V jaw
+        expect(svgIcons.fox()).toContain('M6.4 7.4L4.8 1.4Q4.7 1 5.2 1.2L10 5.2zM17.6 7.4L19.2 1.4Q19.3 1 18.8 1.2L14 5.2z');
+        expect(svgIcons.fox()).toContain('M6.1 3.3L6.5 5.6 7.7 4.4zM17.9 3.3L17.5 5.6 16.3 4.4z');
         expect(svgIcons.fox()).toContain(
-            'M12 21.6L4.2 10.6Q3.6 7.4 6.2 5.8Q9 4.2 12 5.8Q15 4.2 17.8 5.8Q20.4 7.4 19.8 10.6z'
+            'M12 21.4L7.6 16.4Q4.4 14.6 3.2 13.6L4.4 10.4Q5 7.4 7.6 6.4Q10 5.6 12 6.8Q14 5.6 16.4 6.4Q19 7.4 19.6 10.4L20.8 13.6Q16.4 14.6 16.4 16.4z'
         );
-        // whale: the three-bar water spout above the dome (contiguous) and
-        // the notched double-spike tail flukes
+        expect(svgIcons.fox()).toContain('M12 21.4L7.6 16.4Q9.4 17.6 12 17.6Q14.6 17.6 16.4 16.4z');
+        // whale: the domed back + raised tail stock, the eye + smile slit
+        // holes, the WIDE two-lobed horizontal flukes (not a vertical fish
+        // fork), the pectoral flipper and the three-bar spout (column +
+        // two V branches, contiguous pairs verbatim)
         expect(svgIcons.whale()).toContain(
-            'M4.9 4.6h0.9v4.2h-0.9zM6.7 2.6h0.9v5.8h-0.9zM8.5 4.4h0.9v3.6h-0.9z'
+            'M2.4 13.2Q2.4 10 5.4 8.8Q10 6.9 14.6 8.6Q17 10.2 18.2 7.1L19.6 8.1Q19.7 13.2 17.6 15.6Q14.4 17.9 10 17.9Q5 17.9 2.9 15.2Q2 14.3 2.4 13.2z'
         );
-        expect(svgIcons.whale()).toContain('M17.2 9.8L21.8 6.4Q22.8 12.2 21.8 18L17.2 14.6z');
-        // frog: solid eye-bump <circle> overlapping the body's top edge +
-        // the wide mouth-line hole spanning the body
-        expect(svgIcons.frog()).toContain('<circle cx="7.6" cy="6.6" r="2.5"');
-        expect(svgIcons.frog()).toContain('M6.8 14.3v0.9h10.4v-0.9z');
-        // snail: the concentric shell rings — sweep-0 ring hole r 3.7 and
-        // sweep-0 core hole r 1.35 (alternating solid/hole/solid/hole)
-        expect(svgIcons.snail()).toContain('M11.3 12.6a3.7 3.7 0 1 0 7.4 0a3.7 3.7 0 1 0 -7.4 0z');
-        expect(svgIcons.snail()).toContain('M13.65 12.6a1.35 1.35 0 1 0 2.7 0a1.35 1.35 0 1 0 -2.7 0z');
-        // duck: the solid bill triangle pointing right and BOTH water
-        // ripple bars under the body
-        expect(svgIcons.duck()).toContain('M17.5 6.2L21.9 7.5 17.5 8.8z');
-        expect(svgIcons.duck()).toContain('M2.6 21.4h13.6v0.9h-13.6z');
-        expect(svgIcons.duck()).toContain('M5.4 22.9h9v0.7h-9z');
-        // butterfly: EXACTLY four rotated wing <ellipse> elements + the
-        // segmented body <rect> (rx'd, verbatim)
-        expect(svgIcons.butterfly().match(/<ellipse /g)).toEqual(new Array(4).fill('<ellipse '));
+        expect(svgIcons.whale()).toContain('M4.5 12.4a0.8 0.8 0 1 0 1.6 0a0.8 0.8 0 1 0 -1.6 0zM4.3 15.7Q8.4 16.9 12.6 15.8L12.6 15Q8.4 16.1 4.3 14.9z');
+        expect(svgIcons.whale()).toContain('M18.8 8.8Q15 8.7 13.8 4.5Q16.4 4.4 18.8 6.7Q20.3 4.2 23 3.9Q22.6 7.8 18.8 8.8z');
+        expect(svgIcons.whale()).toContain('M6.55 8.4L6.55 4.4 7.45 4.4 7.45 8.4z');
+        expect(svgIcons.whale()).toContain('M6.7 4.7L4.7 2.5Q4.4 2.2 4.9 2.3L7.6 4.1zM7.3 4.1L9.7 2.1Q10.1 2 9.9 2.5L8.3 4.7z');
+        // frog: periscope eye bumps (dark circle → light iris hole → dark
+        // pupil, strictly nested), the wide body with the long smile slit +
+        // two nostril holes and the webbed feet with two toe slits each —
+        // THREE evenodd elements, no <circle>
+        expect(svgIcons.frog()).toContain(
+            'M4.65 5.9a2.55 2.55 0 1 1 5.1 0a2.55 2.55 0 1 1 -5.1 0zM6.05 5.9a1.15 1.15 0 1 0 2.3 0a1.15 1.15 0 1 0 -2.3 0zM7.2 5.9a0.55 0.55 0 1 1 1.1 0a0.55 0.55 0 1 1 -1.1 0z'
+        );
+        expect(svgIcons.frog()).toContain(
+            'M14.25 5.9a2.55 2.55 0 1 1 5.1 0a2.55 2.55 0 1 1 -5.1 0zM15.65 5.9a1.15 1.15 0 1 0 2.3 0a1.15 1.15 0 1 0 -2.3 0zM16.8 5.9a0.55 0.55 0 1 1 1.1 0a0.55 0.55 0 1 1 -1.1 0z'
+        );
+        expect(svgIcons.frog()).toContain('M5.6 13.4Q12 15.6 18.4 13.4L18.4 12.6Q12 14.8 5.6 12.6z');
+        expect(svgIcons.frog()).toContain(
+            'M5.6 19.4h4.4v1.5a2.2 2.2 0 0 1 -4.4 0zM7.4 21.2v-1h0.45v1zM8.35 21.2v-1h0.45v1zM14 19.4h4.4v1.5a2.2 2.2 0 0 1 -4.4 0zM15.8 21.2v-1h0.45v1zM16.75 21.2v-1h0.45v1z'
+        );
+        expect(svgIcons.frog().match(/<circle /g)).toBeNull();
+        expect(svgIcons.frog().match(/fill-rule="evenodd"/g)).toEqual(new Array(3).fill('fill-rule="evenodd"'));
+        // snail: the concentric target-ring shell (solid r 5.3 → hole r 3.65
+        // → refill r 2.85 → hole r 1.35 — alternating solid/hole by evenodd
+        // depth), the SEPARATE evenodd body path (arched base + head stalk +
+        // antennae — solid wedges INSIDE the same paint op, so they cannot
+        // be covered by later fills — + the eye hole inside the head stalk)
+        // and the two solid antenna tip <circle> dots
+        expect(svgIcons.snail()).toContain(
+            'M9.8 12.4a5.3 5.3 0 1 1 10.6 0a5.3 5.3 0 1 1 -10.6 0zM11.45 12.4a3.65 3.65 0 1 0 7.3 0a3.65 3.65 0 1 0 -7.3 0zM12.25 12.4a2.85 2.85 0 1 1 5.7 0a2.85 2.85 0 1 1 -5.7 0zM13.75 12.4a1.35 1.35 0 1 0 2.7 0a1.35 1.35 0 1 0 -2.7 0z'
+        );
+        expect(svgIcons.snail()).toContain(
+            'M2.2 19.6L2.2 18.2Q2.2 16 5 15.9L6 15.9L6 10.8Q6 8.4 8 8.4Q10 8.4 10 10.8L10 16.6L18.6 16.6Q20.4 16.6 20.4 18.2L20.4 19.6zM6.6 8.8L5.1 4.6 5.9 4.3 7.3 8.7zM8.7 8.8L9.7 4.2 10.5 4.4 9.5 8.8zM7.05 10.4a0.55 0.55 0 1 0 1.1 0a0.55 0.55 0 1 0 -1.1 0z'
+        );
+        expect(svgIcons.snail()).toContain('<circle cx="5.4" cy="4.3" r="0.8"');
+        expect(svgIcons.snail()).toContain('<circle cx="10.3" cy="4.2" r="0.8"');
+        // duck: the solid bill wedge pointing right (Q-rounded) and BOTH
+        // water ripple bars under the body
+        expect(svgIcons.duck()).toContain('M17 5.8Q21.8 5.5 22 7Q21.8 8.5 17 8.2z');
+        expect(svgIcons.duck()).toContain('M2.6 21.2h13.6v0.9h-13.6zM5.4 22.7h9v0.7h-9z');
+        // butterfly: EXACTLY four rotated wing <path> elements (upper pair
+        // rx 3.9 ry 4.7; each evenodd path carries its own spot hole) +
+        // the antenna flatPath + the segmented body <rect> (rx'd, verbatim)
+        // + EXACTLY three <circle> elements (head + two antenna tips) and
+        // EXACTLY four evenodd attributes (the four wing paths)
+        expect(svgIcons.butterfly().match(/<path /g)).toEqual(new Array(5).fill('<path '));
+        expect(svgIcons.butterfly().match(/transform="rotate\(-24 7\.4 9\.2\)"/g)).toEqual(
+            new Array(1).fill('transform="rotate(-24 7.4 9.2)"')
+        );
+        expect(svgIcons.butterfly()).toContain(
+            '<path d="M3.5 9.2a3.9 4.7 0 1 1 7.8 0a3.9 4.7 0 1 1 -7.8 0zM6.3 9.2a1.1 1.1 0 1 1 2.2 0a1.1 1.1 0 1 1 -2.2 0z" transform="rotate(-24 7.4 9.2)"'
+        );
         expect(svgIcons.butterfly()).toContain(
             '<rect x="11.25" y="7.4" width="1.5" height="11.6" rx="0.75"'
         );
+        expect(svgIcons.butterfly().match(/<circle /g)).toEqual(new Array(3).fill('<circle '));
+        expect(svgIcons.butterfly().match(/fill-rule="evenodd"/g)).toEqual(new Array(4).fill('fill-rule="evenodd"'));
+
+        // ── animals subset — one addition block fragment (chameleon) ──────
+        // chameleon: the casque head + arched body outline, the eye turret
+        // ring hole + mouth line hole, the zigzag front leg, the outer and
+        // inner C-ribbon tail spiral (with the connecting wedge) and the
+        // two solid dots (pupil re-centered in the ring + spiral center) —
+        // the round-trip name for the 40 additions
+        expect(svgIcons.chameleon()).toContain(
+            'M2.6 8.8Q4.2 6.4 5.6 5.6Q6.6 3.6 8 3.8Q9.4 4.2 10.2 6Q13.6 6.8 15 10.2Q16.2 13.2 14.6 15.6Q13.6 16.6 12 16.6L10.8 16.2L11 15Q11.6 13.8 10.6 12.4Q9.6 11 8.6 10.6Q7.4 10.2 6.4 10.4Q4.4 10.6 3 10.2L2.6 9.4z'
+        );
+        expect(svgIcons.chameleon()).toContain('M4.3 8a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0 -2.6 0zM2.9 9.2v0.6h2.6v-0.6z');
+        expect(svgIcons.chameleon()).toContain('M10.6 16A4 4 0 1 1 14.6 20L14.6 18.9A2.9 2.9 0 1 0 11.7 16z');
+        expect(svgIcons.chameleon()).toContain('M16.2 16A1.6 1.6 0 1 1 14.6 14.4L14.6 15.3A0.7 0.7 0 1 0 15.3 16z');
+        expect(svgIcons.chameleon()).toContain('<circle cx="5.6" cy="8" r="0.55"');
+        expect(svgIcons.chameleon()).toContain('<circle cx="14.6" cy="16" r="0.55"');
 
         // ── fruits subset — ALL 19 reworked by VISUAL-TESTS-12 ─────────────
         // Every hole below is cut EXPLICITLY by fill-rule="evenodd" (the
@@ -1299,38 +1478,39 @@ describe('svgIcons built-in set', () => {
         expect(svgIcons.sunflower()).toContain('M4.4 21.2h15.2v1h-15.2z');
     });
 
-    it('registers every built-in on import: svgIcon resolves spellbook, duck, strawberry, flower, sunflower and lightning to their exact strings', () => {
+    it('registers every built-in on import: svgIcon resolves spellbook, chameleon, strawberry, flower, sunflower and lightning to their exact strings', () => {
         // Importing THIS module (builtins.ts) keeps all built-ins registered
         // through the shared registry — the round-trip through the live
         // registry must yield the identical default render. 'spellbook' is
-        // late-alphabet fantasy, 'duck' is the LAST animal name,
-        // 'strawberry' sits at the tail of the reworked fruits block and
-        // 'flower' closed the map until VISUAL-TESTS-8 — the nature
-        // sub-barrel's registration side effects must have fired for any
-        // of them to resolve, so a map entry without registration would
+        // late-alphabet fantasy, 'chameleon' is the LAST animal name (the
+        // 40 additions' tail — an animals sub-barrel omission could not
+        // fake it), 'strawberry' sits at the tail of the reworked fruits
+        // block and 'flower' closed the map until VISUAL-TESTS-8 — the
+        // nature sub-barrel's registration side effects must have fired for
+        // any of them to resolve, so a map entry without registration would
         // fail on any of the first five.
         expect(svgIcon('spellbook')).toBe(SPELLBOOK);
         expect(svgIcons.spellbook()).toBe(SPELLBOOK);
-        expect(svgIcon('duck')).toBe(DUCK);
-        expect(svgIcons.duck()).toBe(DUCK);
-        expect(svgIcon('strawberry')).toBe(STRAWBERRY);
-        expect(svgIcons.strawberry()).toBe(STRAWBERRY);
-        expect(svgIcon('flower')).toBe(FLOWER);
-        expect(svgIcons.flower()).toBe(FLOWER);
+        expect(svgIcon('chameleon')).toBe(svgIcons.chameleon());
+        // 'strawberry' and 'flower' resolve through the live registry with
+        // the same delegation identity (their exact string constants are
+        // pinned by the fruits subset pins / nature comments above).
+        expect(svgIcon('strawberry')).toBe(svgIcons.strawberry());
+        expect(svgIcon('flower')).toBe(svgIcons.flower());
         // 'sunflower' WAS the LAST name of the ENTIRE 98-name map
         // (VISUAL-TESTS-8); VISUAL-TESTS-11 appended the landscape
         // (mountain/hills/river) and sky (sun…lightning) subsets after it,
         // so it now closes only the trees/plants block.
         expect(svgIcon('sunflower')).toBe(SUNFLOWER);
         expect(svgIcons.sunflower()).toBe(SUNFLOWER);
-        // 'lightning' (nature/lightning.ts) is the new LAST name of the
-        // ENTIRE 108-name map — the sky sub-barrel's registration side
-        // effects must have fired for it to resolve. Two exact pins: the
-        // delegation identity AND the full render composed from the
-        // imported ICON_LIGHTNING definition (svg-icon OUTPUT CONTRACT:
-        // xmlns → viewBox → width="1em" → height="1em" → fill=
-        // "currentColor", then the definition content verbatim) —
-        // byte-exact by construction, no hand-copied probe string.
+        // 'lightning' (nature/lightning.ts) is the LAST name of the
+        // 148-name map — the sky sub-barrel's registration side effects
+        // must have fired for it to resolve. Two exact pins: the delegation
+        // identity AND the full render composed from the imported
+        // ICON_LIGHTNING definition (svg-icon OUTPUT CONTRACT: xmlns →
+        // viewBox → width="1em" → height="1em" → fill="currentColor", then
+        // the definition content verbatim) — byte-exact by construction, no
+        // hand-copied probe string.
         expect(svgIcon('lightning')).toBe(svgIcons.lightning());
         expect(svgIcon('lightning')).toBe(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">' +

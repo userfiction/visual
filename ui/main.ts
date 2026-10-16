@@ -53,7 +53,9 @@ const SUBSET_NAMES: Array<[string, string[]]> = [
     ],
     ['Fantasy', ['sword', 'axe', 'wand', 'shield', 'potion', 'scroll', 'spellbook', 'crown', 'gem', 'key']],
     ['Flags', ['flag', 'pennant', 'banner', 'wavingFlag', 'checkeredFlag', 'nordicFlag', 'swallowtailFlag', 'bunting']],
-    ['Animals', ['cat', 'dog', 'bird', 'fish', 'rabbit', 'bear', 'dragon', 'snake', 'turtle', 'paw', 'horse', 'lion', 'owl', 'fox', 'whale', 'frog', 'snail', 'penguin', 'butterfly', 'duck']],
+    // Match src/icons/animals/index.ts so every new species is discoverable
+    // through the Animals filter as well as the unfiltered gallery.
+    ['Animals', ['cat', 'dog', 'bird', 'fish', 'rabbit', 'bear', 'dragon', 'snake', 'turtle', 'paw', 'horse', 'lion', 'owl', 'fox', 'whale', 'frog', 'snail', 'penguin', 'butterfly', 'duck', 'elephant', 'giraffe', 'zebra', 'rhinoceros', 'hippopotamus', 'monkey', 'gorilla', 'panda', 'koala', 'kangaroo', 'deer', 'moose', 'wolf', 'tiger', 'cow', 'pig', 'sheep', 'goat', 'camel', 'donkey', 'bat', 'eagle', 'parrot', 'flamingo', 'swan', 'chicken', 'rooster', 'peacock', 'ostrich', 'shark', 'dolphin', 'octopus', 'squid', 'jellyfish', 'crab', 'lobster', 'seahorse', 'crocodile', 'lizard', 'chameleon']],
     ['Fruits', ['apple', 'banana', 'cherry', 'grape', 'orange', 'lemon', 'watermelon', 'pear', 'strawberry', 'peach', 'pineapple', 'kiwi', 'mango', 'avocado', 'blueberry', 'coconut', 'pomegranate', 'plum', 'melon']],
     ['Nature', ['oak', 'pine', 'palm', 'birch', 'maple', 'fir', 'cypress', 'willow', 'appleTree', 'cherryTree', 'redwood', 'spruce', 'bush', 'cactus', 'fern', 'flower', 'tulip', 'sunflower']],
     ['Landscape', ['mountain', 'hills', 'river']],
