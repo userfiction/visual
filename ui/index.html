@@ -10,6 +10,13 @@
      This UI is a SHOWCASE ONLY — it is not part of the npm package
      (@userfiction/visual ships the library: src/ + dist/). It is built and
      deployed to GitHub Pages by .github/workflows/deploy-visual-ui.yml.
+
+     THEMING: main.ts resolves the theme MODE (auto/light/dark) against
+     prefers-color-scheme and writes the resolved value to
+     <html data-theme="light|dark"> — styles.css keys every color off that
+     attribute (plus a `color-scheme` per theme). No flash-of-wrong-theme:
+     the data-theme attribute is applied in the inline script below BEFORE
+     first paint, then main.ts takes over.
 ============================================================================ -->
 <html lang="en">
     <head>
@@ -17,19 +24,38 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>@userfiction/visual — icon gallery</title>
         <link rel="stylesheet" href="./styles.css" />
+        <script>
+            // Pre-paint theme resolution: mirror of main.ts's resolveTheme for
+            // the stored mode (default auto). Kept inline so a dark-system
+            // visitor never sees a white flash. localStorage may throw in
+            // privacy modes — guarded, defaults to light.
+            (function () {
+                var mode = 'auto';
+                try {
+                    mode = localStorage.getItem('visual-ui-theme') || 'auto';
+                } catch (error) {
+                    mode = 'auto';
+                }
+                var dark =
+                    mode === 'dark' ||
+                    (mode !== 'light' &&
+                        window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+            })();
+        </script>
     </head>
     <body>
         <header class="top">
             <h1>@userfiction/visual</h1>
             <p class="subtitle">
                 Flat-design SVG icons for User Fiction — solid fills, currentColor, one shared 24&times;24 grid.
-                Click a card to copy the standalone SVG markup.
+                Filter by set, recolor with the picker, click a card to copy the raw HTML for pasting.
             </p>
-            <!-- size-toolbar and count are mounted by main.ts -->
+            <!-- set filter, size, color, theme controls + count are mounted by main.ts -->
             <div id="toolbar-mount"></div>
         </header>
 
-        <!-- gallery.ts mount: one card per built-in icon -->
+        <!-- gallery.ts mount: one card per built-in icon (subset-filtered) -->
         <main id="gallery-mount" class="gallery" aria-label="Icon gallery"></main>
 
         <footer class="bottom">

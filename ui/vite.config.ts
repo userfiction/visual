@@ -16,7 +16,9 @@
 // - The UI is NOT part of the npm package: excluded from package.json
 //   "files" and tsconfig.build.json; it is built and published to GitHub
 //   Pages by .github/workflows/deploy-visual-ui.yml.
-// - No backend, no fetch, no storage: this is a pure static app.
+// - No backend, no fetch: this is a pure static app. (localStorage is used
+//   by the showcase for theme/color preference persistence — client-side
+//   only, nothing external.)
 // ----------------------------------------------------------------------------
 import { defineConfig } from 'vite';
 

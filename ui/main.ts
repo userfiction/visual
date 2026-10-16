@@ -3,21 +3,26 @@
 // ============================================================================
 // Vanilla DOM app (no React, no backend, no fetch): enumerates every built-in
 // icon through the package's OWN string layer and renders one card per icon —
-// rendered SVG, registry name, click-to-copy of the standalone SVG markup.
+// rendered SVG, registry name, click-to-copy of the RAW HTML (the standalone
+// <svg …> markup, ready for pasting into any HTML surface).
 //
-// IMPORT CONTRACT: the UI deep-imports '../src/icons/icons' (NOT the package
-// barrel). The barrel also re-exports react.tsx, which imports 'react' — the
-// vanilla showcase must not drag React into its bundle. Importing the
-// svgIcons map both registers every built-in into the shared registry
-// (see icons.ts REGISTRY VISIBILITY) and guarantees nothing is dropped by
-// tree-shaking: every factory is referenced from this module.
+// Controls (all state in-memory; theme + color persist to localStorage):
+//   set filter     — All / Generic / Fantasy / Flags / Animals / Fruits /
+//                    Nature / Landscape / Sky
+//   preview size   — 16 / 24 / 32 / 48 px segmented control
+//   color picker   — preset swatches + native <input type="color"> + reset;
+//                    recolors every rendered icon via the --icon-color token
+//                    (icons are currentColor, so one token drives them all)
+//   theme          — Auto (follows prefers-color-scheme, live) / Light / Dark
+//
+// IMPORT CONTRACT: the UI deep-imports '../src/icons/builtins' (NOT the
+// package barrel). The barrel also re-exports react.tsx, which imports
+// 'react' — the vanilla showcase must not drag React into its bundle.
+// Importing the svgIcons map both registers every built-in into the shared
+// registry (see builtins.ts REGISTRY VISIBILITY) and guarantees nothing is
+// dropped by tree-shaking: every factory is referenced from this module.
 // ============================================================================
 
-// svgIcons: name → bound factory (registers + renders); SvgIconFactory type
-// import vanishes at build time (type-only, zero runtime cost).
-// IMPORT PATH: the discovery map lives in '../src/icons/builtins' — it
-// registers every built-in (generic + fantasy) as a side effect of importing
-// the generic/fantasy sub-barrels.
 import { svgIcons } from '../src/icons/builtins';
 import type { SvgIconFactory } from '../src/icons/svg-icon';
 
@@ -38,9 +43,39 @@ const builtins: Array<[string, SvgIconFactory]> = Object.keys(svgIcons).map(
     (name) => [name, svgIcons[name]] as [string, SvgIconFactory]
 );
 
+// ── subsets: explicit name→set membership (self-documenting, survives any
+// future reordering of the svgIcons map; 'All' is the unfiltered view) ──────
+
+const SUBSET_NAMES: Array<[string, string[]]> = [
+    [
+        'Generic',
+        ['check', 'close', 'plus', 'minus', 'menu', 'chevronDown', 'chevronUp', 'chevronLeft', 'chevronRight', 'arrowRight', 'play', 'pause', 'stop', 'heart', 'star', 'book', 'bookmark', 'user', 'home', 'pin', 'trash', 'search', 'download'],
+    ],
+    ['Fantasy', ['sword', 'axe', 'wand', 'shield', 'potion', 'scroll', 'spellbook', 'crown', 'gem', 'key']],
+    ['Flags', ['flag', 'pennant', 'banner', 'wavingFlag', 'checkeredFlag', 'nordicFlag', 'swallowtailFlag', 'bunting']],
+    ['Animals', ['cat', 'dog', 'bird', 'fish', 'rabbit', 'bear', 'dragon', 'snake', 'turtle', 'paw', 'horse', 'lion', 'owl', 'fox', 'whale', 'frog', 'snail', 'penguin', 'butterfly', 'duck']],
+    ['Fruits', ['apple', 'banana', 'cherry', 'grape', 'orange', 'lemon', 'watermelon', 'pear', 'strawberry', 'peach', 'pineapple', 'kiwi', 'mango', 'avocado', 'blueberry', 'coconut', 'pomegranate', 'plum', 'melon']],
+    ['Nature', ['oak', 'pine', 'palm', 'birch', 'maple', 'fir', 'cypress', 'willow', 'appleTree', 'cherryTree', 'redwood', 'spruce', 'bush', 'cactus', 'fern', 'flower', 'tulip', 'sunflower']],
+    ['Landscape', ['mountain', 'hills', 'river']],
+    ['Sky', ['sun', 'moon', 'cloud', 'stars', 'sunrise', 'rainbow', 'lightning']],
+];
+
+// name → subset label lookup (unknown names never filter out of 'All' but
+// also never match a subset filter — forward-compatible with new subsets
+// before this table is extended)
+const nameSubset: { [name: string]: string } = {};
+arrayEach(SUBSET_NAMES, ([subset, names]) => {
+    arrayEach(names, (name) => {
+        nameSubset[name] = subset;
+    });
+});
+
+// ── gallery state ────────────────────────────────────────────────────────────
+
 // Selected preview size for the grid — one of the toolbar's fixed choices
 const SIZES = [16, 24, 32, 48];
 let currentSize = 32;
+let currentSubset = 'All';
 
 // ── copy-to-clipboard with a non-secure-context fallback ────────────────────
 
@@ -71,7 +106,120 @@ const showToast = (message: string): void => {
     toastTimer = window.setTimeout(() => toast.classList.remove('visible'), 1600);
 };
 
-// ── toolbar (size segmented control + count) ────────────────────────────────
+// ── theme: mode (auto/light/dark) → resolved data-theme attribute ────────────
+// CSS (styles.css) keys every color off html[data-theme="light"|"dark"]; the
+// MODE is what the user picks and what persists. In auto the resolution is
+// LIVE: the matchMedia listener re-applies while the OS theme flips.
+
+type ThemeMode = 'auto' | 'light' | 'dark';
+const THEME_STORAGE_KEY = 'visual-ui-theme';
+const THEME_MODES: ThemeMode[] = ['auto', 'light', 'dark'];
+
+const themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+const readStoredMode = (): ThemeMode => {
+    try {
+        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        // Anything other than a known mode (or absent) falls back to auto
+        return stored === 'light' || stored === 'dark' ? stored : 'auto';
+    } catch (error) {
+        return 'auto';
+    }
+};
+
+let themeMode: ThemeMode = readStoredMode();
+
+// Resolves the mode against the OS preference and writes the CONCRETE theme
+// to <html data-theme> — the only DOM side effect; CSS does the rest.
+const applyTheme = (): void => {
+    const dark = themeMode === 'dark' || (themeMode === 'auto' && themeQuery.matches);
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+};
+
+// Auto mode is live: OS-level theme flips re-resolve without a reload.
+themeQuery.addEventListener('change', () => {
+    if (themeMode === 'auto') applyTheme();
+});
+
+const setThemeMode = (mode: ThemeMode): void => {
+    themeMode = mode;
+    applyTheme();
+    try {
+        localStorage.setItem(THEME_STORAGE_KEY, mode);
+    } catch (error) {
+        // Storage unavailable (privacy mode / file:// edge) — theme still
+        // applies for the session, it just will not persist.
+    }
+};
+
+applyTheme();
+
+// ── icon color: one CSS token driving every currentColor icon ────────────────
+// null = theme default (icons follow the theme ink); a hex overrides it.
+// Presets stay theme-independent (brand-ish colors look right on both).
+
+const ICON_STORAGE_KEY = 'visual-ui-color';
+
+const COLOR_PRESETS: Array<{ name: string; hex: string | null }> = [
+    { name: 'Theme default', hex: null },
+    { name: 'Ink', hex: '#16181d' },
+    { name: 'Rose', hex: '#e11d48' },
+    { name: 'Amber', hex: '#d97706' },
+    { name: 'Emerald', hex: '#059669' },
+    { name: 'Blue', hex: '#3b5bfd' },
+    { name: 'Violet', hex: '#7c3aed' },
+];
+
+const readStoredColor = (): string | null => {
+    try {
+        const stored = localStorage.getItem(ICON_STORAGE_KEY);
+        // Only hex values are accepted back — anything else (corrupted /
+        // hand-edited storage) falls back to the theme default
+        return stored && /^#[0-9a-fA-F]{6}$/.test(stored) ? stored : null;
+    } catch (error) {
+        return null;
+    }
+};
+
+let iconColor: string | null = readStoredColor();
+
+// Writes the token onto the gallery mount (scoped, not :root — the toolbar
+// preview swatches do not consume it) and clears it for the theme default.
+const applyIconColor = (): void => {
+    if (iconColor === null) {
+        galleryMount.style.removeProperty('--icon-color');
+    } else {
+        galleryMount.style.setProperty('--icon-color', iconColor);
+    }
+};
+
+const setIconColor = (hex: string | null): void => {
+    iconColor = hex;
+    applyIconColor();
+    try {
+        if (hex === null) localStorage.removeItem(ICON_STORAGE_KEY);
+        else localStorage.setItem(ICON_STORAGE_KEY, hex);
+    } catch (error) {
+        // Storage unavailable — color still applies for the session.
+    }
+    renderGallery(); // swatch active states live in the toolbar re-render
+    renderToolbar();
+};
+
+applyIconColor();
+
+// ── toolbar (set filter + size + color + theme + count) ──────────────────────
+
+// One flat segmented pill; `active` marks the selected value.
+const makeSegment = (label: string, active: boolean, onClick: () => void): HTMLButtonElement => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `seg-button${active ? ' active' : ''}`;
+    button.textContent = label;
+    button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    button.addEventListener('click', onClick);
+    return button;
+};
 
 const renderToolbar = (): void => {
     toolbarMount.textContent = '';
@@ -79,29 +227,119 @@ const renderToolbar = (): void => {
     const toolbar = document.createElement('div');
     toolbar.className = 'toolbar';
 
-    const label = document.createElement('span');
-    label.className = 'label';
-    label.textContent = 'Preview size';
-    toolbar.appendChild(label);
+    // ── set filter (All + every named subset) ──
+    const setGroup = document.createElement('div');
+    setGroup.className = 'group';
+    const setLabel = document.createElement('span');
+    setLabel.className = 'label';
+    setLabel.textContent = 'Set';
+    setGroup.appendChild(setLabel);
+    const makeSetSegment = (label: string): void => {
+        setGroup.appendChild(
+            makeSegment(label, currentSubset === label, () => {
+                currentSubset = label;
+                renderGallery();
+                renderToolbar();
+            })
+        );
+    };
+    makeSetSegment('All');
+    arrayEach(SUBSET_NAMES, ([subset]) => makeSetSegment(subset));
+    toolbar.appendChild(setGroup);
 
+    // ── preview size ──
+    const sizeGroup = document.createElement('div');
+    sizeGroup.className = 'group';
+    const sizeLabel = document.createElement('span');
+    sizeLabel.className = 'label';
+    sizeLabel.textContent = 'Preview size';
+    sizeGroup.appendChild(sizeLabel);
     arrayEach(SIZES, (size) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = `size-button${size === currentSize ? ' active' : ''}`;
-        button.textContent = `${size}px`;
-        button.setAttribute('aria-pressed', size === currentSize ? 'true' : 'false');
-        button.addEventListener('click', () => {
-            currentSize = size;
-            // Full re-render on size change — the grid is cheap (23 cards)
-            renderGallery();
-            renderToolbar();
-        });
-        toolbar.appendChild(button);
+        sizeGroup.appendChild(
+            makeSegment(`${size}px`, size === currentSize, () => {
+                currentSize = size;
+                // Full re-render on size change — the grid is cheap (98 cards)
+                renderGallery();
+                renderToolbar();
+            })
+        );
+    });
+    toolbar.appendChild(sizeGroup);
+
+    // ── color picker: reset chip + preset swatches + native wheel input ──
+    const colorGroup = document.createElement('div');
+    colorGroup.className = 'group';
+    const colorLabel = document.createElement('span');
+    colorLabel.className = 'label';
+    colorLabel.textContent = 'Color';
+    colorGroup.appendChild(colorLabel);
+
+    arrayEach(COLOR_PRESETS, (preset) => {
+        if (preset.hex === null) {
+            // Reset chip: bordered circle with a slash — back to theme ink
+            const reset = document.createElement('button');
+            reset.type = 'button';
+            reset.className = `swatch swatch-reset${iconColor === null ? ' active' : ''}`;
+            reset.title = 'Theme default';
+            reset.setAttribute('aria-label', 'Reset icon color to theme default');
+            reset.addEventListener('click', () => setIconColor(null));
+            colorGroup.appendChild(reset);
+            return;
+        }
+        const swatch = document.createElement('button');
+        swatch.type = 'button';
+        swatch.className = `swatch${iconColor === preset.hex ? ' active' : ''}`;
+        swatch.style.background = preset.hex;
+        swatch.title = `${preset.name} (${preset.hex})`;
+        swatch.setAttribute('aria-label', `Set icon color to ${preset.name}`);
+        swatch.addEventListener('click', () => setIconColor(preset.hex));
+        colorGroup.appendChild(swatch);
     });
 
+    // Native color input = the free "color wheel": any hex the OS picker
+    // exposes. `input` fires live (drag) — apply + repaint the gallery ONLY
+    // (no toolbar rebuild, which would replace this very input mid-drag —
+    // and no persistence per tick); `change` commits the final value with
+    // the full setIconColor (persist + toolbar re-render for swatch rings).
+    const wheel = document.createElement('input');
+    wheel.type = 'color';
+    wheel.className = 'color-input';
+    // Seed the OS picker with the active color (or a neutral) — its own
+    // value never drives rendering until the user picks
+    wheel.value = iconColor ?? '#3b5bfd';
+    wheel.title = 'Custom color';
+    wheel.setAttribute('aria-label', 'Pick a custom icon color');
+    wheel.addEventListener('input', () => {
+        iconColor = wheel.value;
+        applyIconColor();
+        renderGallery();
+    });
+    wheel.addEventListener('change', () => setIconColor(wheel.value));
+    colorGroup.appendChild(wheel);
+    toolbar.appendChild(colorGroup);
+
+    // ── theme: Auto / Light / Dark ──
+    const themeGroup = document.createElement('div');
+    themeGroup.className = 'group';
+    const themeLabel = document.createElement('span');
+    themeLabel.className = 'label';
+    themeLabel.textContent = 'Theme';
+    themeGroup.appendChild(themeLabel);
+    arrayEach(THEME_MODES, (mode) => {
+        themeGroup.appendChild(
+            makeSegment(mode === 'auto' ? 'Auto' : mode === 'light' ? 'Light' : 'Dark', themeMode === mode, () => {
+                setThemeMode(mode);
+                renderToolbar(); // active pill moves
+            })
+        );
+    });
+    toolbar.appendChild(themeGroup);
+
+    // Count reflects the FILTERED gallery, not the whole map
+    const visible = builtins.filter(([name]) => currentSubset === 'All' || nameSubset[name] === currentSubset);
     const count = document.createElement('span');
     count.className = 'count';
-    count.textContent = `${builtins.length} icons`;
+    count.textContent = `${visible.length} icons`;
     toolbar.appendChild(count);
 
     toolbarMount.appendChild(toolbar);
@@ -113,15 +351,19 @@ const renderGallery = (): void => {
     galleryMount.textContent = '';
 
     arrayEach(builtins, ([name, factory]) => {
+        // Subset filter: 'All' shows every built-in, otherwise membership
+        // comes from the explicit name→subset table above
+        if (currentSubset !== 'All' && nameSubset[name] !== currentSubset) return;
+
         const card = document.createElement('button');
         card.type = 'button';
         card.className = 'card';
         // a11y: the card IS a button whose accessible name is the icon name
-        card.setAttribute('aria-label', `Copy ${name} icon SVG`);
+        card.setAttribute('aria-label', `Copy ${name} icon HTML`);
 
         // Icon well: the factory returns a full standalone <svg …> string —
         // injected verbatim (package-authored markup, same trust boundary as
-        // the library itself)
+        // the library itself). Color comes from --icon-color via currentColor.
         const well = document.createElement('span');
         well.className = 'well';
         well.innerHTML = factory({ size: currentSize });
@@ -132,11 +374,12 @@ const renderGallery = (): void => {
         nameNode.textContent = name;
         card.appendChild(nameNode);
 
-        // Click → copy the DEFAULT-size standalone markup (size: default
-        // '1em' scales with the consumer's font, the most reusable form)
+        // Click → copy the RAW HTML: the DEFAULT-size standalone markup
+        // (size: default '1em' scales with the consumer's font, the most
+        // reusable form for pasting into any HTML surface)
         card.addEventListener('click', () => {
             copyText(factory());
-            showToast(`Copied ${name} SVG`);
+            showToast(`Copied ${name} HTML`);
         });
 
         galleryMount.appendChild(card);
@@ -146,9 +389,11 @@ const renderGallery = (): void => {
 // ── tiny local iteration helper ──────────────────────────────────────────────
 // forEach-shaped callback loop (index + value) without pulling
 // @presource/core into the UI bundle — the showcase stays dependency-light
-const arrayEach = <T,>(items: T[], callback: (value: T, index: number) => void): void => {
-    items.forEach((value, index) => callback(value, index));
-};
+function arrayEach<T>(items: T[], callback: (value: T, index: number) => void): void {
+    items.forEach(function (value, index) {
+        callback(value, index);
+    });
+}
 
 // ── boot ─────────────────────────────────────────────────────────────────────
 

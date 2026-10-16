@@ -13,6 +13,21 @@
 //   fantasy/        — FANTASY icon set, same per-icon pattern (sword, wand,
 //                     shield, potion, scroll, spellbook, crown, gem, key,
 //                     axe ×10)
+//   flags/          — FLAGS subset, same pattern (flag, pennant, banner,
+//                     wavingFlag, checkeredFlag, nordicFlag,
+//                     swallowtailFlag, bunting ×8)
+//   animals/        — ANIMALS subset, same pattern (cat, dog, bird, fish,
+//                     rabbit, bear, dragon, snake, turtle, paw + horse,
+//                     lion, owl, fox, whale, frog, snail, penguin,
+//                     butterfly, duck ×20)
+//   fruits/         — FRUITS subset, same pattern (apple, banana, cherry,
+//                     grape, orange, lemon, watermelon, pear, strawberry,
+//                     peach + pineapple, kiwi, mango, avocado, blueberry,
+//                     coconut, pomegranate, plum, melon ×19)
+//   nature/         — NATURE subset (trees + plants), same pattern (oak,
+//                     pine, palm, birch, maple, fir, cypress, willow,
+//                     appleTree, cherryTree, redwood, spruce, bush,
+//                     cactus, fern, flower, tulip, sunflower ×18)
 //   builtins.ts     — the svgIcons discovery map over ALL per-icon modules
 //                     (importing it registers every built-in)
 //
@@ -27,4 +42,8 @@ export * from './svg-icon';
 export * from './react';
 export * from './generic';
 export * from './fantasy';
+export * from './flags';
+export * from './animals';
+export * from './fruits';
+export * from './nature';
 export * from './builtins';

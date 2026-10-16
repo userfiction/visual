@@ -3,17 +3,37 @@
    ----------------------------------------------------------------------------
    Flat palette: solid fills, 1px borders, NO gradients, NO shadows. The
    icons themselves inherit currentColor from the card text color, so the
-   --ink token drives both.
+   --icon-color token drives both (set by the color picker, falls back to
+   the theme ink).
+
+   THEMING: every surface/text color is a token on :root (light values) and
+   is overridden under html[data-theme="dark"]. main.ts resolves the theme
+   MODE (auto/light/dark) against prefers-color-scheme and writes the
+   RESOLVED value ("light"|"dark") to data-theme — CSS only ever sees two
+   concrete themes, so there is no [data-theme="auto"] branch here.
    ========================================================================== */
 
 :root {
+    color-scheme: light;
     --bg: #f4f5f7;        /* page background */
     --card: #ffffff;      /* card surface */
-    --ink: #16181d;       /* text + icon color (icons inherit currentColor) */
+    --ink: #16181d;       /* text color (icons fall back to it) */
+    --icon-color: var(--ink); /* icon color — overridden by the color picker */
     --muted: #6b7280;     /* secondary text */
     --border: #e2e4e9;    /* hairline borders */
     --accent: #3b5bfd;    /* interactive accents (buttons, links) */
     --radius: 10px;
+}
+
+html[data-theme='dark'] {
+    color-scheme: dark;
+    --bg: #17181c;
+    --card: #202228;
+    --ink: #e8eaed;
+    --icon-color: var(--ink);
+    --muted: #9aa0a6;
+    --border: #34373f;
+    --accent: #8ea2ff;
 }
 
 * {
@@ -49,20 +69,29 @@ body {
     max-width: 640px;
 }
 
-/* size toolbar: flat segmented buttons */
+/* ── toolbar (one flex-wrapping row of labeled control groups) ──────────── */
+
 .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px 18px;
+    flex-wrap: wrap;
+}
+
+.group {
     display: flex;
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
 }
 
-.toolbar .label {
+.group .label {
     color: var(--muted);
     font-size: 13px;
 }
 
-.size-button {
+/* segmented buttons (size + subset + theme share the same pill style) */
+.seg-button {
     border: 1px solid var(--border);
     background: var(--card);
     color: var(--ink);
@@ -72,12 +101,12 @@ body {
     cursor: pointer;
 }
 
-.size-button:hover {
+.seg-button:hover {
     border-color: var(--accent);
 }
 
-/* active size = solid flat fill, no shadow */
-.size-button.active {
+/* active segment = solid flat fill, no shadow */
+.seg-button.active {
     background: var(--ink);
     border-color: var(--ink);
     color: var(--card);
@@ -87,6 +116,70 @@ body {
     color: var(--muted);
     font-size: 13px;
     margin-left: 4px;
+}
+
+/* ── color picker group ─────────────────────────────────────────────────── */
+
+/* swatch = small round flat chip; the active one gets an accent ring */
+.swatch {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+    /* the chip color itself comes from the inline background set by main.ts */
+}
+
+.swatch.active {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+/* native color input restyled into a same-size round chip */
+input[type='color'].color-input {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+}
+
+/* the swatch-in-input inherits the chosen value; strip the native padding */
+input[type='color'].color-input::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type='color'].color-input::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+
+input[type='color'].color-input::-moz-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+
+/* reset chip: returns icons to the theme ink (a slash glyph drawn via two
+   background halves would need gradients — flat rule keeps it a bordered
+   empty circle with a diagonal bar rendered as a rotated pseudo-element) */
+.swatch-reset {
+    position: relative;
+    background: var(--card);
+}
+
+.swatch-reset::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    top: 50%;
+    height: 2px;
+    margin-top: -1px;
+    background: var(--muted);
+    transform: rotate(-45deg);
 }
 
 /* ── gallery grid ───────────────────────────────────────────────────────── */
@@ -122,8 +215,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* icons inherit this color via currentColor (flat-design contract) */
-    color: var(--ink);
+    /* icons inherit this color via currentColor (flat-design contract);
+       --icon-color is the picker's value, falling back to the theme ink */
+    color: var(--icon-color, var(--ink));
 }
 
 .card .name {
