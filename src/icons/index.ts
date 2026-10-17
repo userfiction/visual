@@ -10,12 +10,13 @@
 //                     close.ts, … ×23): each exports the ICON_<NAME>
 //                     geometry, the svg<Name> string factory and the
 //                     <Name>Icon React component; index.ts is the sub-barrel
-//   fantasy/        — FANTASY icon set, same per-icon pattern (sword, wand,
-//                     shield, potion, scroll, spellbook, crown, gem, key,
-//                     axe ×10)
+//   fantasy/        — FANTASY/RPG icon set, same per-icon pattern: weapons,
+//                     armor, alchemy, magic and loot ×30; complete ordered
+//                     catalog in fantasy/index.ts and builtins.ts
 //   flags/          — FLAGS subset, same pattern (flag, pennant, banner,
 //                     wavingFlag, checkeredFlag, nordicFlag,
-//                     swallowtailFlag, bunting ×8)
+//                     swallowtailFlag, bunting + 16 silhouettes/heraldry ×24;
+//                     complete ordered catalog in flags/index.ts)
 //   animals/        — ANIMALS subset, same pattern (cat, dog, bird, fish,
 //                     rabbit, bear, dragon, snake, turtle, paw + horse,
 //                     lion, owl, fox, whale, frog, snail, penguin,
@@ -28,7 +29,8 @@
 //   nature/         — NATURE subset (trees + plants), same pattern (oak,
 //                     pine, palm, birch, maple, fir, cypress, willow,
 //                     appleTree, cherryTree, redwood, spruce, bush,
-//                     cactus, fern, flower, tulip, sunflower ×18)
+//                     cactus, fern, flower, tulip, sunflower ×18), landscape
+//                     ×3 and sky/weather/celestial ×30; nature/index.ts
 //   builtins.ts     — the svgIcons discovery map over ALL per-icon modules
 //                     (importing it registers every built-in)
 //

@@ -1,11 +1,11 @@
 /**
  * icons.test.ts — deterministic tests for the built-in icon registry
  * (./builtins.ts) over the ONE-FILE-PER-ICON architecture (generic/*.ts ×23,
- * fantasy/*.ts ×10, flags/*.ts ×8, animals/*.ts ×60, fruits/*.ts ×19,
- * nature/*.ts ×28 — cross-reference the FILE ARCHITECTURE header in
- * svg-icon.ts): the exact 148-factory key list, the per-icon flat-design
+ * fantasy/*.ts ×30, flags/*.ts ×24, animals/*.ts ×60, fruits/*.ts ×19,
+ * nature/*.ts ×51 — cross-reference the FILE ARCHITECTURE header in
+ * svg-icon.ts): the exact 207-factory key list, the per-icon flat-design
  * structural invariants, exact full-string spot checks (generic trio +
- * fantasy trio + flags pair flag/checkeredFlag + the redrawn animal trio
+ * fantasy trio + flags trio flag/checkeredFlag/nordicFlag + the redrawn animal trio
  * cat/horse/penguin + literal butterfly + tail duck + the fruit trio
  * apple/watermelon/kiwi-coconut-blueberry + flower and sunflower for the
  * round-trip + lightning — the round-trip's LAST name, pinned via the
@@ -22,7 +22,8 @@
  * svg-icon.ts supplies the per-element fill="currentColor" stroke="none"
  * pair, the evenodd template appends fill-rule="evenodd") and was verified
  * byte-for-byte against the runtime via scratch probes under the repo-root
- * Temp/ directory (most recently Temp/visual/probe-animals-vt13.ts, which
+ * Temp/ directory (most recently Temp/visual/probe-fantasy-redraw.ts for
+ * the FANTASY-REDRAW pass and Temp/visual/probe-animals-vt13.ts, which
  * diffs hand-derived strings against the live render; run with
  * `npx vite-node Temp/visual/<probe>.ts` from the workspace root).
  * Nature specifics: the
@@ -40,15 +41,26 @@
  * silhouette — see the REWORK NOTE at the end of this header.)
  *
  * CONTRACTS PINNED:
- *   1. svgIcons exposes EXACTLY the 148 built-in names in registration
- *      order — generic 23 first, then fantasy 10, then the themed
- *      subsets flags 8 → animals 60 → fruits 19 → nature 28 (builtins.ts
+ *   1. svgIcons exposes EXACTLY the 207 built-in names in registration
+ *      order — generic 23 first, then fantasy 30, then the themed
+ *      subsets flags 24 → animals 60 → fruits 19 → nature 51 (builtins.ts
  *      appends; an insertion would change key order and break this
- *      contract). The animals block grew from 20 to 60
+ *      contract). The fantasy block grew from 10 to 30
+ *      (FANTASY-REDRAW): the ten originals keep their redrawn geometry
+ *      and relative order (sword → key), then the 20 equipment/
+ *      consumable/loot additions mace … skull append after 'key' —
+ *      skull is the fantasy tail, immediately before 'flag'. The
+ *      animals block grew from 20 to 60
  *      (VISUAL-TESTS-13 redraw/expansion): the 20 originals keep their
  *      redrawn geometry and relative order (cat → duck), then the 40
  *      wildlife additions elephant … chameleon append after 'duck' —
  *      chameleon is the animals tail, immediately before 'apple'.
+ *      REGISTRY-EXPANSION (flags + sky): the flags block grew 8 → 24 —
+ *      the eight originals keep their order (flag → bunting), then the
+ *      16 uplifted additions triangularFlag … ceremonialBanner append
+ *      after 'bunting' (ceremonialBanner the flags tail). The nature
+ *      sky subset grew 7 → 30 — sunset … aurora append after
+ *      'lightning'; 'aurora' is the map tail.
  *   2. EVERY factory renders the flat-design shell: starts with `<svg `,
  *      ends with `</svg>`, carries the xmlns declaration, per-element flat
  *      attributes fill="currentColor" stroke="none", and NO gradient or
@@ -57,11 +69,15 @@
  *      effect is real and the two paths produce byte-identical strings.
  *   4. Exact full strings for the generic trio: check / plus / menu.
  *   5. Exact full strings for the fantasy trio: sword / gem / crown
- *      (sword exercises the literal non-path <circle> pommel element).
- *   6. Exact full strings for the flags pair: flag / checkeredFlag (14
- *      counterclockwise checker holes cut from the clockwise flag rect —
- *      hole winding is load-bearing, same-direction subpaths would render
- *      the flag solid).
+ *      (FANTASY-REDRAW — sword's pommel is now a separate evenodd PATH
+ *      ring element whose overlap with the grip unions across elements;
+ *      the literal non-path element rule rides the axe/wand/potion
+ *      circle+rect pins in contract 9).
+ *   6. Exact full strings for the flags trio: flag (uplifted full-height
+ *      pole + 15×11 field) / checkeredFlag (16 checker holes of the 8×4
+ *      grid, cut by EXPLICIT fill-rule="evenodd" — winding no longer
+ *      load-bearing) / nordicFlag (18×16 field, the LEFT-offset cross
+ *      hole cut by explicit evenodd).
  *   7. Exact full strings for the redrawn animals cat / horse / penguin
  *      and the literal-element butterfly (probe-verified against the
  *      CURRENT geometry — cat/horse/penguin use the evenodd-template
@@ -81,22 +97,25 @@
  *      VISUAL-TESTS-12 reworked fruits (apple/banana/cherry/grape/orange/
  *      lemon/watermelon/pear/strawberry/peach/pineapple/kiwi/mango/
  *      avocado/blueberry/coconut/pomegranate/plum/melon) and the
- *      fragment-covered nature subset (18 of its 28 icons — the ten
- *      VISUAL-TESTS-11 landscape/sky icons carry no full-string/fragment
- *      pins; they are covered by the key-list pin, the all-icons
- *      shell/delegation loop and the round-trip's 'lightning' pin).
+ *      fragment-covered nature subset (18 of its 51 icons — the ten
+ *      VISUAL-TESTS-11 landscape/sky icons and the 23 SKY-PRODUCTION
+ *      weather/celestial additions carry no full-string/fragment pins
+ *      here; they are covered by the key-list pin, the all-icons
+ *      shell/delegation loop and the round-trip's 'aurora' pin).
  *
  *  10. Registry round-trip: svgIcon('spellbook') AND svgIcon('chameleon')
  *      AND svgIcon('strawberry') AND svgIcon('flower') AND
  *      svgIcon('sunflower') render the exact strings after importing this
  *      module — importing the builtins map (via the
  *      generic/fantasy/flags/animals/fruits/nature sub-barrels)
- *      registered ALL built-ins, and all five names sit late in their
- *      subsets, so a stale/missing registration could not fake this pass.
+ *      registered ALL built-ins, and all five names sit past their subset
+ *      heads ('spellbook' is 7th of the 30-name fantasy block after the
+ *      FANTASY-REDRAW additions), so a stale/missing registration could
+ *      not fake this pass.
  *      ('chameleon' is the NEW late-alphabet animals-tail addition —
  *      late enough that an animals sub-barrel omission could not fake it;
- *      'lightning' remains the map's LAST name, pinned via the registry
- *      delegation identity AND the shell + ICON_LIGHTNING composition.)
+ *      'aurora' is the map's LAST name, pinned via the registry
+ *      delegation identity AND the ICON_AURORA composition.)
  *
  * VISUAL-TESTS-13 REWORK NOTE (animals): ALL TWENTY animal original modules
  * were re-laid (recognizable species silhouettes — cat single-silhouette
@@ -152,14 +171,44 @@
  * non-fruit fragment pins are UNTOUCHED. The per-module complement
  * (self-containment, registration, XML validity, element censuses and
  * string/React parity for all 19) lives in the NEW fruits/fruits.test.ts.
+ *
+ * FANTASY-REDRAW REWORK NOTE: ALL TEN original fantasy modules were re-laid
+ * with EXPLICIT fill-rule="evenodd" hole-cutting (winding never load-bearing
+ * — same convention as the VISUAL-TESTS-12 fruits): sword fuller slot +
+ * two grip-wrap notches + pommel RING as a separate paint-over path element,
+ * axe inset cheek-lens bevel + pommel knob circle, wand CONCAVE quadratic
+ * sparkles + two literal dot circles, shield inset border band + chevron
+ * emblem refilled at evenodd depth 3, potion hollow cavity + liquid refill
+ * + bubble holes with the cork rect + fizz dot as separate paint-overs,
+ * scroll body switched from a literal <rect> to an evenodd path carrying
+ * four writing-line slots (the two literal rolls remain — 2 rects + 1
+ * path), spellbook spine slot + concave rune + two mote-dot holes, crown
+ * three band-jewel holes + orb finials as a separate paint-over flatPath,
+ * gem girdle/crown/pavilion facet slots (the girdle slot CONFINED to the
+ * silhouette intersection so it cannot fill outside the outline) and key
+ * ornate diamond bow + pierced hole + collar/shaft/tooth/stepped-bit
+ * flatPath. Every fantasy fragment and full-string constant below was
+ * re-derived from the hand-read module sources and confirmed against
+ * Temp/visual/probe-fantasy-redraw.ts (an evenodd point-in-shape probe —
+ * per-element fill semantics with paint-order OR across elements —
+ * 159 checks pass, 0 fail; run with
+ * `npx vite-node Temp/visual/probe-fantasy-redraw.ts` from the workspace
+ * root). The key-list pin grew 148 → 168 preserving existing order (the 20
+ * additions append after 'key'); the per-module complement
+ * (self-containment, registration, XML validity, element censuses and
+ * string/React parity for all 30) lives in fantasy/fantasy.test.ts.
  */
 import { describe, expect, it } from 'vitest';
 import { svgIcon } from './svg-icon';
 import { svgIcons } from './builtins';
-// ICON_LIGHTNING (nature/lightning.ts): the round-trip test composes the
-// 'lightning' full render from this definition const (svg-icon shell +
-// content) — byte-exact by construction, no hand-copied probe string.
+// ICON_LIGHTNING (nature/lightning.ts): kept as an independent module
+// probe inside the geometry/round-trip tests below (no longer the map
+// tail — 'aurora' is LAST after the SKY-PRODUCTION wave).
 import { ICON_LIGHTNING } from './nature/lightning';
+// ICON_AURORA (nature/aurora.ts): the round-trip test composes the
+// 'aurora' full render from this definition const (svg-icon shell +
+// content) — byte-exact by construction, no hand-copied probe string.
+import { ICON_AURORA } from './nature/aurora';
 
 // ── exact expected strings (probe-verified full outputs) ────────────────────
 const CHECK =
@@ -168,32 +217,71 @@ const PLUS =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="currentColor" stroke="none"/></svg>';
 const MENU =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M4 6h16v2H4zM4 11h16v2H4zM4 16h16v2H4z" fill="currentColor" stroke="none"/></svg>';
-// Fantasy trio — sword's pommel is a literal <circle> element (fantasy/sword.ts
-// line 17), not flatPath, so it also pins the non-path uniform-attribute rule.
+// Fantasy trio (FANTASY-REDRAW). sword = TWO evenodd path elements — the
+// main silhouette (blade with the transparent 1.1-wide fuller slot + the
+// TWO full-width grip-wrap notches) and the pommel RING (outer r 1.5 +
+// r 0.65 hole) as its own paint-over path element: ring and grip overlap
+// 0.4 deep (y 20.6..21), so a same-path subpath would XOR transparent under
+// evenodd — as a later element it unions (disjointness precedent:
+// fruits/fruits.test.ts; see the ELEMENT SPLIT note in fantasy/sword.ts).
+// The literal non-path element rule now rides the axe/wand/potion
+// circle+rect pins in the geometry test below.
 const SWORD =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M12 1L14.5 5V15H9.5V5ZM6 15H18V17.5H6ZM11 17.5H13V21H11Z" fill="currentColor" stroke="none"/><circle cx="12" cy="22" r="1.5" fill="currentColor" stroke="none"/></svg>';
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">' +
+    '<path d="M12 1L14.5 5V15H9.5V5ZM11.45 6H12.55V13.9H11.45ZM6 15H18V17.5H6ZM11 17.5H13V21H11ZM11 18.4H13V19H11ZM11 19.8H13V20.4H11Z" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '<path d="M12 20.6a1.5 1.5 0 1 1 0 3a1.5 1.5 0 1 1 0-3zM12 21.45a0.65 0.65 0 1 0 0 1.3a0.65 0.65 0 1 0 0-1.3z" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '</svg>';
+// gem (fantasy/gem.ts, FANTASY-REDRAW): ONE evenodd element — the brilliant
+// silhouette (table edge (6,5)..(18,5), girdle points (3,10)/(21,10), culet
+// (12,21)) carrying the facet cuts as holes: the girdle slot band (y
+// 9.6..10.4) CONFINED to the silhouette intersection (top edge x
+// 3.24..20.76, bottom edge x 3.32727..20.67273 — a plain x 3..21 slot would
+// poke past the outline where the parent has evenodd depth 0 and 0→1 FILLS,
+// see the review fix in fantasy/gem.ts), two crown slots from the table
+// corners and two pavilion wedges converging at the culet.
 const GEM =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M12 21L3 10L6 5H18L21 10Z" fill="currentColor" stroke="none"/></svg>';
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M12 21L3 10L6 5H18L21 10ZM3.24 9.6H20.76L21 10L20.67273 10.4H3.32727L3 10ZM6 5L9 9.6H9.8L6.8 5ZM17.2 5H18L15 9.6H14.2ZM9 10.4H9.8L12 21ZM14.2 10.4H15L12 21Z" fill="currentColor" stroke="none" fill-rule="evenodd"/></svg>';
+// crown (fantasy/crown.ts, FANTASY-REDRAW): TWO elements — the three-spike
+// body + flush base bar carrying THREE r-0.8 band-jewel holes punched
+// through the bar (evenodd depth 2; 0.45 margins keep the bar continuous
+// around them), then the three orb finials (r 1.05 at (4,7.3)/(20,7.3) +
+// r 1.15 at (12,4.7)) as a SEPARATE paint-over flatPath — each ball
+// overlaps its spike tip, so a same-path subpath would XOR transparent.
 const CROWN =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M4 16V8L7.8 10.8L12 5.5L16.2 10.8L20 8V16ZM4 16H20V18.5H4Z" fill="currentColor" stroke="none"/></svg>';
-// spellbook (fantasy/spellbook.ts): wound clockwise with a counterclockwise
-// star subpath so nonzero fill cuts the hole — the pin proves both subpaths
-// survive registration verbatim.
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">' +
+    '<path d="M4 16V8L7.8 10.8L12 5.5L16.2 10.8L20 8V16ZM4 16H20V18.5H4ZM6.7 17.25a0.8 0.8 0 1 0 1.6 0a0.8 0.8 0 1 0 -1.6 0zM11.2 17.25a0.8 0.8 0 1 0 1.6 0a0.8 0.8 0 1 0 -1.6 0zM15.7 17.25a0.8 0.8 0 1 0 1.6 0a0.8 0.8 0 1 0 -1.6 0z" fill="currentColor" stroke="none" fill-rule="evenodd"/>' +
+    '<path d="M4 6.25a1.05 1.05 0 1 1 0 2.1a1.05 1.05 0 1 1 0-2.1zM12 3.55a1.15 1.15 0 1 1 0 2.3a1.15 1.15 0 1 1 0-2.3zM20 6.25a1.05 1.05 0 1 1 0 2.1a1.05 1.05 0 1 1 0-2.1z" fill="currentColor" stroke="none"/>' +
+    '</svg>';
+// spellbook (fantasy/spellbook.ts, FANTASY-REDRAW): ONE evenodd element —
+// the solid rounded tome carrying the spine slot (x 7.1..7.9, open at the
+// top/bottom edges so the 2.1-unit band splits off as the bound spine), the
+// CONCAVE 4-point rune sparkle (arm 3.2 at (13.5,12), quadratic controls
+// ±0.6 — same construction as the redrawn wand sparkles) and the two lesser
+// mote-dot holes (r 0.7 at (17.1,8.6), r 0.6 at (10.2,16.4)).
 const SPELLBOOK =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M7 3H17A2 2 0 0 1 19 5V19A2 2 0 0 1 17 21H7A2 2 0 0 1 5 19V5A2 2 0 0 1 7 3ZM12 14.8L14.8 12L12 9.2L9.2 12Z" fill="currentColor" stroke="none"/></svg>';
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M7 3H17A2 2 0 0 1 19 5V19A2 2 0 0 1 17 21H7A2 2 0 0 1 5 19V5A2 2 0 0 1 7 3ZM7.1 3H7.9V21H7.1ZM13.5 8.8Q14.1 11.4 16.7 12Q14.1 12.6 13.5 15.2Q12.9 12.6 10.3 12Q12.9 11.4 13.5 8.8ZM16.4 8.6a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM9.6 16.4a0.6 0.6 0 1 0 1.2 0a0.6 0.6 0 1 0 -1.2 0z" fill="currentColor" stroke="none" fill-rule="evenodd"/></svg>';
 // New-subset quintet — one exact full default render per themed subset.
-// flag (flags/flag.ts): pole rect + flag rect, two solid subpaths, no holes.
+// flag (flags/flag.ts, REGISTRY-EXPANSION uplift): pole rect x 4..6
+// spanning y 1..23 (full-height pole) + flag rect x 6..21 spanning
+// y 3..14 — two solid subpaths, no holes.
 const FLAG =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M4 2h2v20H4zM6 3h13v7H6z" fill="currentColor" stroke="none"/></svg>';
-// checkeredFlag (flags/checkered-flag.ts): pole + flag rect wound CLOCKWISE,
-// then 14 checker holes (3+4+3+4 per row, every (col+row)-odd cell of the
-// 7×4 grid) wound COUNTERCLOCKWISE (`v2h2V<rowY>z`) — under nonzero fill the
-// reversed-winding subpaths are what leave the checker pattern; if they were
-// wound like the body the flag would render as a solid rectangle. Winding is
-// structural-only here: the exact hole fragment existence is pinned in the
-// geometry test below (14× `v2h2V` matches).
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M4 1h2v22H4zM6 3h15v11H6z" fill="currentColor" stroke="none"/></svg>';
+// checkeredFlag (flags/checkered-flag.ts, REGISTRY-EXPANSION uplift): pole
+// rect x 3..5 y 1..23 + 16×8-wide flag rect x 5..21 y 3..11, with 16
+// checker holes (4+4+4+4 per row, every (col+row)-odd cell of the 8×4
+// grid) cut by EXPLICIT fill-rule="evenodd" (the literal template appends
+// it after the flat pair — winding is no longer load-bearing; the holes
+// are still written `v2h2V<rowY>z` counterclockwise). Every hole is pinned
+// verbatim below in the geometry test (16 matches).
 const CHECKERED_FLAG =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M3 2h2v20H3zM5 3h14v8H5zM7 3v2h2V3zM11 3v2h2V3zM15 3v2h2V3zM5 5v2h2V5zM9 5v2h2V5zM13 5v2h2V5zM17 5v2h2V5zM7 7v2h2V7zM11 7v2h2V7zM15 7v2h2V7zM5 9v2h2V9zM9 9v2h2V9zM13 9v2h2V9zM17 9v2h2V9z" fill="currentColor" stroke="none"/></svg>';
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M3 1h2v22H3zM5 3h16v8H5zM7 3v2h2V3zM11 3v2h2V3zM15 3v2h2V3zM19 3v2h2V3zM5 5v2h2V5zM9 5v2h2V5zM13 5v2h2V5zM17 5v2h2V5zM7 7v2h2V7zM11 7v2h2V7zM15 7v2h2V7zM19 7v2h2V7zM5 9v2h2V9zM9 9v2h2V9zM13 9v2h2V9zM17 9v2h2V9z" fill="currentColor" stroke="none" fill-rule="evenodd"/></svg>';
+// nordicFlag (flags/nordic-flag.ts, REGISTRY-EXPANSION uplift): 18×16
+// flag rect x 3..21 y 4..20 with the LEFT-offset cross hole (vertical
+// band x 9..11.5, horizontal band y 10.75..13.25) cut by EXPLICIT
+// fill-rule="evenodd" (the offset band arms meet at (10.25,12) — the
+// Nordic silhouette; centered sibling = crossFlag).
+const NORDIC_FLAG =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M3 4h18v16H3zM9 10.75H3v2.5h6v6.75h2.5v-6.75h9.5v-2.5h-9.5V4h-2.5z" fill="currentColor" stroke="none" fill-rule="evenodd"/></svg>';
 // cat (animals/cat.ts, VISUAL-TESTS-13 redraw): TWO elements — the
 // single-silhouette head+ears body (wide trapezoid with bulged sides, ear
 // tips at (5,2.4)/(19,2.4), forehead dip Q12 7.2, rounded chin Q12 20.6)
@@ -340,9 +428,9 @@ const BLUEBERRY =
 // at y 18.6 was added by the nature detail pass), then five solid petal
 // <circle> elements on a ring around (12,8.9) plus the center disc. 'flower'
 // closed the map until VISUAL-TESTS-8; 'sunflower' then closed it until the
-// VISUAL-TESTS-11 landscape + sky appends made 'lightning' the LAST name
-// (see SUNFLOWER below and the round-trip test at the bottom). The
-// round-trip test pins it via svgIcon delegation only.
+// VISUAL-TESTS-11 landscape + sky appends and the SKY-PRODUCTION wave made
+// 'aurora' the LAST name (see SUNFLOWER below and the round-trip test at
+// the bottom). The round-trip test pins it via svgIcon delegation only.
 const FLOWER =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M11.4 12.2h1.2v9h-1.2zM12.6 16.4c2.4-1.4 4.6-1 5.6.4-2.2 1.6-4.4 1.2-5.6-.4zM11.4 18.6c-2.4-1.4-4.6-1-5.6.4 2.2 1.6 4.4 1.2 5.6-.4z" fill="currentColor" stroke="none"/><circle cx="12" cy="5.6" r="2.3" fill="currentColor" stroke="none"/><circle cx="15.4" cy="8" r="2.3" fill="currentColor" stroke="none"/><circle cx="14.1" cy="12" r="2.3" fill="currentColor" stroke="none"/><circle cx="9.9" cy="12" r="2.3" fill="currentColor" stroke="none"/><circle cx="8.6" cy="8" r="2.3" fill="currentColor" stroke="none"/><circle cx="12" cy="9" r="2.1" fill="currentColor" stroke="none"/></svg>';
 // sunflower (nature/sunflower.ts): ONE flatPath — the TWELVE thin ray wedges
@@ -354,27 +442,35 @@ const FLOWER =
 // and the ground line. 'sunflower' WAS the VERY LAST name in the 98-name
 // map (VISUAL-TESTS-8), so the nature sub-barrel's registration side
 // effects must have fired for it to resolve at all; VISUAL-TESTS-11
-// appended the landscape + sky subsets after it and 'lightning' is now the
+// appended the landscape + sky subsets and the SKY-PRODUCTION wave added
+// the weather + celestial names — 'aurora' is now the LAST name
 // LAST name (the round-trip test below pins that too).
 const SUNFLOWER =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor"><path d="M12 7L17.6 7L14.128 7zM12 7L16.85 9.8L13.843 8.064zM12 7L14.8 11.85L13.064 8.843zM12 7L12 12.6L12 9.128zM12 7L9.2 11.85L10.936 8.843zM12 7L7.15 9.8L10.157 8.064zM12 7L6.4 7L9.872 7zM12 7L7.15 4.2L10.157 5.936zM12 7L9.2 2.15L10.936 5.157zM12 7L12 1.4L12 4.872zM12 7L14.8 2.15L13.064 5.157zM12 7L16.85 4.2L13.843 5.936zM8.4 7a3.6 3.6 0 1 1 7.2 0a3.6 3.6 0 1 1 -7.2 0zM9.95 7a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM11.35 9.1a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM13.65 7a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM11.35 4.9a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM11.3 7a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM11.4 10.8h1.2v10.4h-1.2zM12.6 15.4c2.4-1.4 4.6-1 5.6.4-2.2 1.6-4.4 1.2-5.6-.4zM11.4 18.2c-2.4-1.4-4.6-1-5.6.4 2.2 1.6 4.4 1.2 5.6-.4zM4.4 21.2h15.2v1h-15.2z" fill="currentColor" stroke="none"/></svg>';
 
 // Shared presentation attributes every definition element carries
-// (svg-icon.ts flatPath + the literal template paths — the fantasy scroll
-// roll, EVERY fruit evenodd body path (whose literal template appends
-// fill-rule="evenodd" after the pair — see the VISUAL-TESTS-12 REWORK
-// NOTE), grape's <g> carrier (its six berry circles stay attribute-free
-// and inherit), the nature palm/cactus/flower literals and the
-// literal-element animals fish/bear/lion/owl/frog/snail/turtle/butterfly)
+// (svg-icon.ts flatPath + the literal template paths — the FANTASY-REDRAW
+// evenodd paths (sword main+pommel, shield, potion, scroll body,
+// spellbook, crown body, gem, key bow — their literal template appends
+// fill-rule="evenodd" after the pair, see the FANTASY-REDRAW REWORK
+// NOTE), the fantasy scroll rolls + EVERY fruit evenodd body path (same
+// literal template — see the VISUAL-TESTS-12 REWORK NOTE), grape's <g>
+// carrier (its six berry circles stay attribute-free and inherit), the
+// nature palm/cactus/flower literals and the literal-element animals
+// fish/bear/lion/owl/frog/snail/turtle/butterfly)
 // — asserted verbatim inside every output.
 const FLAT_ELEMENT_ATTRS = 'fill="currentColor" stroke="none"';
 
 describe('svgIcons built-in set', () => {
-    it('exposes exactly the 148 built-in registry names, in registration order', () => {
-        // Generic 23, then fantasy 10, then flags 8, animals 60, fruits 19,
-        // nature 28 — the exact object-literal order in builtins.ts
+    it('exposes exactly the 207 built-in registry names, in registration order', () => {
+        // Generic 23, then fantasy 30, then flags 24, animals 60, fruits 19,
+        // nature 51 — the exact object-literal order in builtins.ts
         // (appending is the only safe evolution; the ui/gallery and
         // VisualIcon/data-icon resolve through these same keys). The
+        // fantasy block lists the ten FANTASY-REDRAW originals first
+        // (sword → key), then the 20 equipment/consumable/loot additions
+        // in fantasy/index.ts's sub-barrel order — skull is the fantasy
+        // tail, immediately before 'flag'. The
         // animals block lists the 20 redrawn originals first (cat → duck),
         // then the 40 wildlife additions (VISUAL-TESTS-13) in
         // animals/index.ts's sub-barrel order — chameleon is the animals
@@ -385,7 +481,13 @@ describe('svgIcons built-in set', () => {
         // detail-passed originals with the four tree additions
         // (appleTree/cherryTree/redwood/spruce) between 'willow' and
         // 'bush' and the two bloom additions (tulip/sunflower) after
-        // 'flower' — the sub-barrel order of nature/index.ts.
+        // 'flower' — the sub-barrel order of nature/index.ts. The flags
+        // block lists the eight originals first (flag → bunting), then
+        // the 16 uplifted additions (REGISTRY-EXPANSION) in
+        // flags/index.ts's sub-barrel order — ceremonialBanner is the
+        // flags tail; the nature sky subset lists the seven originals
+        // then the 23 SKY-PRODUCTION weather/celestial names — aurora
+        // closes the whole map.
         expect(Object.keys(svgIcons)).toEqual([
             'check',
             'close',
@@ -420,6 +522,30 @@ describe('svgIcons built-in set', () => {
             'crown',
             'gem',
             'key',
+            // ── fantasy: the 20 FANTASY-REDRAW equipment/consumable/loot
+            // additions appended after 'key' in fantasy/index.ts's
+            // sub-barrel order — skull CLOSES the fantasy block
+            // immediately before 'flag'
+            'mace',
+            'vial',
+            'dagger',
+            'bow',
+            'arrow',
+            'staff',
+            'spear',
+            'warhammer',
+            'helmet',
+            'armor',
+            'gauntlet',
+            'boots',
+            'ring',
+            'amulet',
+            'torch',
+            'backpack',
+            'chest',
+            'coins',
+            'dice',
+            'skull',
             // ── flags ───────────────────────────────────────────────────────
             'flag',
             'pennant',
@@ -429,6 +555,26 @@ describe('svgIcons built-in set', () => {
             'nordicFlag',
             'swallowtailFlag',
             'bunting',
+            // ── flags: the 16 REGISTRY-EXPANSION additions appended after
+            // 'bunting' in flags/index.ts's sub-barrel order —
+            // ceremonialBanner CLOSES the flags block immediately before
+            // 'cat'
+            'triangularFlag',
+            'doublePennant',
+            'forkedFlag',
+            'roundedFlag',
+            'tatteredFlag',
+            'crossedFlags',
+            'flagGarland',
+            'windsock',
+            'flagOnHill',
+            'victoryFlag',
+            'stripedFlag',
+            'crossFlag',
+            'saltireFlag',
+            'diamondFlag',
+            'signalFlag',
+            'ceremonialBanner',
             // ── animals ─────────────────────────────────────────────────────
             'cat',
             'dog',
@@ -545,8 +691,7 @@ describe('svgIcons built-in set', () => {
             'river',
             // ── nature: the VISUAL-TESTS-11 SKY subset ─────────────────────
             // sun/moon/cloud/stars/sunrise/rainbow/lightning — appended
-            // right after landscape and CLOSES the whole map; 'lightning'
-            // is the LAST name, pinned by the round-trip test below
+            // right after landscape
             'sun',
             'moon',
             'cloud',
@@ -554,6 +699,32 @@ describe('svgIcons built-in set', () => {
             'sunrise',
             'rainbow',
             'lightning',
+            // ── nature: the 23 SKY-PRODUCTION weather + celestial additions
+            // appended after 'lightning' in nature/index.ts's sub-barrel
+            // order — aurora CLOSES the whole map
+            'sunset',
+            'sunCloud',
+            'moonCloud',
+            'cloudRain',
+            'cloudDrizzle',
+            'cloudSnow',
+            'cloudLightning',
+            'cloudWind',
+            'fog',
+            'wind',
+            'tornado',
+            'snowflake',
+            'raindrop',
+            'umbrella',
+            'crescentMoon',
+            'fullMoon',
+            'halfMoon',
+            'moonStars',
+            'shootingStar',
+            'constellation',
+            'comet',
+            'eclipse',
+            'aurora',
         ]);
     });
 
@@ -589,10 +760,12 @@ describe('svgIcons built-in set', () => {
         expect(svgIcons.crown()).toBe(CROWN);
     });
 
-    it('pins the exact full output strings for one icon per themed subset: flag, checkeredFlag, cat, apple, watermelon', () => {
-        // flags: plain rect flag and the winding-sensitive checkered flag
+    it('pins the exact full output strings for one icon per themed subset: flag, checkeredFlag, nordicFlag, cat, apple, watermelon', () => {
+        // flags: plain rect flag and the winding-independent checkered +
+        // nordic cross flags (explicit evenodd, REGISTRY-EXPANSION uplift)
         expect(svgIcons.flag()).toBe(FLAG);
         expect(svgIcons.checkeredFlag()).toBe(CHECKERED_FLAG);
+        expect(svgIcons.nordicFlag()).toBe(NORDIC_FLAG);
         // animals: cat — the VISUAL-TESTS-13 redraw single-silhouette
         // head+ears body with inner-ear/eye/nose/ω-mouth holes (explicit
         // evenodd) + the separate whisker flatPath
@@ -639,50 +812,134 @@ describe('svgIcons built-in set', () => {
         expect(svgIcons.blueberry()).toBe(BLUEBERRY);
     });
 
-    it('wires the distinctive geometry per name (243 fragment spot checks)', () => {
+    it('wires the distinctive geometry per name (312 fragment spot checks)', () => {
         // Material favorite/search geometry — heart lens and search handle
         expect(svgIcons.heart()).toContain('M12 21.35');
         expect(svgIcons.search()).toContain('M15.5 14h');
-        // wand: 4-point sparkle just past the stick tip + its dot circle
-        expect(svgIcons.wand()).toContain('M16.5 4.5l0.8 2.2');
-        expect(svgIcons.wand()).toContain('cx="19.5" cy="3.5"');
-        // potion: rim bar and the sweep-0 corner arc rounding the flask base
-        expect(svgIcons.potion()).toContain('A2.2 2.2 0 0 0 6.6 21');
-        expect(svgIcons.potion()).toContain('M9 2H15V4H9Z');
-        // scroll: roll pill + EXACTLY three <rect> elements (two rolls, body)
+
+        // ── fantasy subset — the FANTASY-REDRAW originals ─────────────────
+        // Every fragment below is transcribed verbatim from the module
+        // source and confirmed against Temp/visual/probe-fantasy-redraw.ts
+        // (159 evenodd fill-point checks, 0 fail). Winding is never
+        // load-bearing: all holes ride ONE evenodd element, and paint-over
+        // overlaps (pommel ring, orb finials, cork/fizz) are SEPARATE
+        // elements by the cross-element union rule.
+        // wand (fantasy/wand.ts): the stick is unchanged; the two CONCAVE
+        // quadratic sparkles (main arm 4.2 at (16.8,7.2), second arm 2.2 at
+        // (20.2,14.4)) are disjoint flatPath subpaths + TWO literal dot
+        // circles (no evenodd anywhere — the null match is the exact
+        // absence assertion)
+        expect(svgIcons.wand()).toContain(
+            'M16.8 3Q17.6 6.4 21 7.2Q17.6 8 16.8 11.4Q16 8 12.6 7.2Q16 6.4 16.8 3z'
+        );
+        expect(svgIcons.wand()).toContain(
+            'M20.2 12.2Q20.7 13.9 22.4 14.4Q20.7 14.9 20.2 16.6Q19.7 14.9 18 14.4Q19.7 13.9 20.2 12.2z'
+        );
+        expect(svgIcons.wand()).toContain('<circle cx="13.3" cy="2.9" r="0.9"');
+        expect(svgIcons.wand()).toContain('<circle cx="21.6" cy="9.6" r="0.7"');
+        expect(svgIcons.wand().match(/<circle /g)).toEqual(['<circle ', '<circle ']);
+        expect(svgIcons.wand().match(/fill-rule="evenodd"/g)).toBeNull();
+        // potion (fantasy/potion.ts): the OUTER GLASS subpath (lip bar
+        // stepped into the neck, r-2.2 sweep-1 base arcs), the depth-3
+        // LIQUID refill from the y 13.4 surface (r-1.4 corner arcs), the
+        // two bubble holes, the literal cork rect + fizz dot (separate
+        // paint-overs over the transparent cavity) and EXACTLY one evenodd
+        // attribute
+        expect(svgIcons.potion()).toContain(
+            'M9 2H15V4H14V8.3L19.4 18.6A2.2 2.2 0 0 1 17.4 21.7H6.6A2.2 2.2 0 0 1 4.6 18.6L10 8.3V4H9Z'
+        );
+        expect(svgIcons.potion()).toContain(
+            'M8.5 13.4H15.5L17.9 18.2A1.4 1.4 0 0 1 16.6 20.3H7.4A1.4 1.4 0 0 1 6.1 18.2Z'
+        );
+        expect(svgIcons.potion()).toContain(
+            'M9.35 16.9a0.85 0.85 0 1 0 1.7 0a0.85 0.85 0 1 0 -1.7 0zM12.95 18.4a0.65 0.65 0 1 0 1.3 0a0.65 0.65 0 1 0 -1.3 0z'
+        );
+        expect(svgIcons.potion()).toContain('<rect x="10.6" y="0.6" width="2.8" height="1.8" rx="0.7"');
+        expect(svgIcons.potion()).toContain('<circle cx="12" cy="10.9" r="0.75"');
+        expect(svgIcons.potion().match(/fill-rule="evenodd"/g)).toEqual(new Array(1).fill('fill-rule="evenodd"'));
+        // scroll (fantasy/scroll.ts): the two literal pill rolls remain —
+        // EXACTLY two <rect> elements now (the body switched to an evenodd
+        // path carrying the four writing-line slots, whose varied right
+        // ends read as text) + EXACTLY one evenodd attribute
         expect(svgIcons.scroll()).toContain('<rect x="3" y="3" width="18" height="4" rx="2"');
-        expect(svgIcons.scroll().match(/<rect /g)).toEqual(['<rect ', '<rect ', '<rect ']);
-        // spellbook: the counterclockwise star subpath that cuts the hole
-        expect(svgIcons.spellbook()).toContain('M12 14.8L14.8 12L12 9.2L9.2 12Z');
-        // key: sweep-0 outer ring and sweep-1 hole — winding is load-bearing
-        expect(svgIcons.key()).toContain('M7 8A4 4 0 1 0 7 16');
-        expect(svgIcons.key()).toContain('M7 10.2A1.8 1.8 0 1 1 7 13.8');
-        // axe: double-quadratic blade lens against the haft
+        expect(svgIcons.scroll().match(/<rect /g)).toEqual(['<rect ', '<rect ']);
+        expect(svgIcons.scroll()).toContain(
+            'M5 5H19V19H5ZM7.6 7.6H16.4V8.7H7.6ZM7.6 10.4H14.2V11.5H7.6ZM7.6 13.2H16.4V14.3H7.6ZM7.6 16H12.4V17.1H7.6Z'
+        );
+        expect(svgIcons.scroll().match(/fill-rule="evenodd"/g)).toEqual(new Array(1).fill('fill-rule="evenodd"'));
+        // spellbook (fantasy/spellbook.ts): the full-height spine slot, the
+        // CONCAVE rune sparkle and the two mote-dot holes (the full string
+        // is pinned via SPELLBOOK in the round-trip test below)
+        expect(svgIcons.spellbook()).toContain('M7.1 3H7.9V21H7.1Z');
+        expect(svgIcons.spellbook()).toContain(
+            'M13.5 8.8Q14.1 11.4 16.7 12Q14.1 12.6 13.5 15.2Q12.9 12.6 10.3 12Q12.9 11.4 13.5 8.8Z'
+        );
+        expect(svgIcons.spellbook()).toContain(
+            'M16.4 8.6a0.7 0.7 0 1 0 1.4 0a0.7 0.7 0 1 0 -1.4 0zM9.6 16.4a0.6 0.6 0 1 0 1.2 0a0.6 0.6 0 1 0 -1.2 0z'
+        );
+        // key (fantasy/key.ts): the ORNATE DIAMOND bow with its pierced
+        // r-1.9 hole (ONE evenodd element) + the collar/shaft, short tooth
+        // and STEPPED L-shaped bit plate flatPath (bow and shaft are
+        // SEPARATE elements — they overlap around the bow tip x 11..12 and
+        // would XOR under evenodd)
+        expect(svgIcons.key()).toContain('M7 7L12 12L7 17L2 12Z');
+        expect(svgIcons.key()).toContain('M5.1 12a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0 -3.8 0z');
+        expect(svgIcons.key()).toContain(
+            'M11 10.2H12.2V11H19.4V13H12.2V13.8H11ZM14 13H15.6V15.4H14ZM17 13H19.6V17.2H18V15.4H17Z'
+        );
+        // axe (fantasy/axe.ts): the double-quadratic blade lens against the
+        // haft (unchanged), the INSET cheek-lens bevel hole and the pommel
+        // knob as its own paint-over literal circle + EXACTLY one evenodd
+        // attribute
         expect(svgIcons.axe()).toContain('M13 3Q20 3.5 21 7Q20 10.5 13 11Z');
-        // shield: mirrored cubic curves down to the bottom point
+        expect(svgIcons.axe()).toContain('M14 4.1Q19 4.6 19.8 7Q19 9.4 14 9.9Q15 7 14 4.1Z');
+        expect(svgIcons.axe()).toContain('<circle cx="12" cy="21.8" r="1.3"');
+        expect(svgIcons.axe().match(/fill-rule="evenodd"/g)).toEqual(new Array(1).fill('fill-rule="evenodd"'));
+        // shield (fantasy/shield.ts): the mirrored cubic curves down to the
+        // bottom point (unchanged), the ~1.6-unit INSET BORDER hole and the
+        // chevron emblem refilled at evenodd depth 3 (border → field hole →
+        // emblem) + EXACTLY one evenodd attribute
         expect(svgIcons.shield()).toContain('C20 16.25 16.6 19.6 12 22C7.4 19.6 4 16.25 4 11V5Z');
+        expect(svgIcons.shield()).toContain(
+            'M12 3.7L18.4 6.1V11C18.4 15.4 15.5 18.3 12 20.4C8.5 18.3 5.6 15.4 5.6 11V6.1Z'
+        );
+        expect(svgIcons.shield()).toContain('M12 7.8L17 12.4V15L12 10.6L7 15V12.4Z');
+        expect(svgIcons.shield().match(/fill-rule="evenodd"/g)).toEqual(new Array(1).fill('fill-rule="evenodd"'));
 
         // ── flags subset ───────────────────────────────────────────────────
-        // checkeredFlag: EXACTLY 14 checker-hole subpaths (`v2h2V<rowY>z` —
-        // each hole starts v2 h2 then absolute V back up). The count proves
-        // every hole survived registration; the holes are wound opposite to
-        // the flag rect, so under nonzero fill the checker pattern shows —
-        // same-direction winding would render the flag solid.
+        // checkeredFlag: EXACTLY 16 checker-hole subpaths (`v2h2V<rowY>z` —
+        // each hole starts v2 h2 then absolute V back up; 4+4+4+4 per row of
+        // the 8×4 grid) cut by the EXPLICIT fill-rule="evenodd" attribute —
+        // the count proves every hole survived registration.
         expect(svgIcons.checkeredFlag().match(/v2h2V/g)).toEqual(
-            new Array(14).fill('v2h2V')
+            new Array(16).fill('v2h2V')
         );
-        // checkeredFlag: one full bottom-row hole verbatim (row y=9, col 0)
-        expect(svgIcons.checkeredFlag()).toContain('M5 9v2h2V9z');
-        // nordicFlag: the CROSS hole cut from the clockwise flag rect —
-        // reversed vertex order (M starts at the cross's right edge and
-        // walks the hole counterclockwise). If it wound like the flag body
-        // the icon would be a solid rectangle.
-        expect(svgIcons.nordicFlag()).toContain('M9 11H4v2h5v6h2v-6h9v-2h-9V5h-2z');
-        // bunting: rope + EXACTLY three pendant triangles (each `l-2.5 6z`)
-        expect(svgIcons.bunting().match(/l-2\.5 6z/g)).toEqual(
-            new Array(3).fill('l-2.5 6z')
+        expect(svgIcons.checkeredFlag().match(/fill-rule="evenodd"/g)).toEqual(
+            new Array(1).fill('fill-rule="evenodd"')
         );
-        expect(svgIcons.bunting()).toContain('M16 5h5l-2.5 6z');
+        // checkeredFlag: the FULL ROW-MAJOR hole run verbatim (rows y 3/5/7/9
+        // — the 16 holes of the uplifted 8×4 grid, cols x 5+2c)
+        expect(svgIcons.checkeredFlag()).toContain(
+            'M7 3v2h2V3zM11 3v2h2V3zM15 3v2h2V3zM19 3v2h2V3zM5 5v2h2V5zM9 5v2h2V5zM13 5v2h2V5zM17 5v2h2V5zM7 7v2h2V7zM11 7v2h2V7zM15 7v2h2V7zM19 7v2h2V7zM5 9v2h2V9zM9 9v2h2V9zM13 9v2h2V9zM17 9v2h2V9z'
+        );
+        // nordicFlag: the LEFT-offset cross hole cut from the 18×16 flag rect
+        // by EXPLICIT evenodd — starts leftward at the horizontal band's left
+        // edge (M9 10.75H3), vertical band x 9..11.5, horizontal band
+        // y 10.75..13.25 (arms meet at (10.25,12)).
+        expect(svgIcons.nordicFlag()).toContain(
+            'M3 4h18v16H3zM9 10.75H3v2.5h6v6.75h2.5v-6.75h9.5v-2.5h-9.5V4h-2.5z'
+        );
+        expect(svgIcons.nordicFlag().match(/fill-rule="evenodd"/g)).toEqual(
+            new Array(1).fill('fill-rule="evenodd"')
+        );
+        // bunting: rope bar + EXACTLY three pendant triangles — the outer
+        // two taper leftward (`h4.5l-2.25 7z`, lowercase rel-L), the MIDDLE
+        // one hangs straight down (`h4.5L12 13.5z`, apex under its base
+        // center) on the uplifted 7-deep pendants of the y 5..6.5 rope
+        expect(svgIcons.bunting().match(/h4\.5l-2\.25 7z/g)).toEqual(
+            new Array(2).fill('h4.5l-2.25 7z')
+        );
+        expect(svgIcons.bunting()).toContain('M4 6.5h4.5l-2.25 7zM9.75 6.5h4.5L12 13.5zM15.5 6.5h4.5l-2.25 7z');
 
         // ── animals subset — REDRAWN originals (VISUAL-TESTS-13) ──────────
         // cat: the single-silhouette head+ears body (ear tips, forehead dip,
@@ -1478,17 +1735,18 @@ describe('svgIcons built-in set', () => {
         expect(svgIcons.sunflower()).toContain('M4.4 21.2h15.2v1h-15.2z');
     });
 
-    it('registers every built-in on import: svgIcon resolves spellbook, chameleon, strawberry, flower, sunflower and lightning to their exact strings', () => {
+    it('registers every built-in on import: svgIcon resolves spellbook, chameleon, strawberry, flower, sunflower, lightning and aurora to their exact strings', () => {
         // Importing THIS module (builtins.ts) keeps all built-ins registered
         // through the shared registry — the round-trip through the live
-        // registry must yield the identical default render. 'spellbook' is
-        // late-alphabet fantasy, 'chameleon' is the LAST animal name (the
-        // 40 additions' tail — an animals sub-barrel omission could not
-        // fake it), 'strawberry' sits at the tail of the reworked fruits
-        // block and 'flower' closed the map until VISUAL-TESTS-8 — the
-        // nature sub-barrel's registration side effects must have fired for
-        // any of them to resolve, so a map entry without registration would
-        // fail on any of the first five.
+        // registry must yield the identical default render. 'spellbook'
+        // sits 7th of the 30-name fantasy block (past its head — a fantasy
+        // sub-barrel omission could not fake it), 'chameleon' is the LAST
+        // animal name (the 40 additions' tail — an animals sub-barrel
+        // omission could not fake it), 'strawberry' sits at the tail of the
+        // reworked fruits block and 'flower' closed the map until
+        // VISUAL-TESTS-8 — the nature sub-barrel's registration side
+        // effects must have fired for any of them to resolve, so a map
+        // entry without registration would fail on any of the first five.
         expect(svgIcon('spellbook')).toBe(SPELLBOOK);
         expect(svgIcons.spellbook()).toBe(SPELLBOOK);
         expect(svgIcon('chameleon')).toBe(svgIcons.chameleon());
@@ -1503,19 +1761,39 @@ describe('svgIcons built-in set', () => {
         // so it now closes only the trees/plants block.
         expect(svgIcon('sunflower')).toBe(SUNFLOWER);
         expect(svgIcons.sunflower()).toBe(SUNFLOWER);
-        // 'lightning' (nature/lightning.ts) is the LAST name of the
-        // 148-name map — the sky sub-barrel's registration side effects
-        // must have fired for it to resolve. Two exact pins: the delegation
-        // identity AND the full render composed from the imported
-        // ICON_LIGHTNING definition (svg-icon OUTPUT CONTRACT: xmlns →
-        // viewBox → width="1em" → height="1em" → fill="currentColor", then
-        // the definition content verbatim) — byte-exact by construction, no
-        // hand-copied probe string.
+        // 'lightning' (nature/lightning.ts) closed the map until the
+        // SKY-PRODUCTION wave appended sunset … aurora after it.
         expect(svgIcon('lightning')).toBe(svgIcons.lightning());
         expect(svgIcon('lightning')).toBe(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">' +
                 ICON_LIGHTNING +
                 '</svg>'
         );
+        // 'aurora' (nature/aurora.ts) is the LAST name of the 207-name map —
+        // the nature sub-barrel's registration side effects must have fired
+        // for it to resolve. Two exact pins: the delegation identity AND the
+        // full render composed from the imported ICON_AURORA definition
+        // (svg-icon OUTPUT CONTRACT: xmlns → viewBox → width="1em" →
+        // height="1em" → fill="currentColor", then the definition content
+        // verbatim) — byte-exact by construction, no hand-copied probe string.
+        expect(svgIcon('aurora')).toBe(svgIcons.aurora());
+        expect(svgIcon('aurora')).toBe(
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">' +
+                ICON_AURORA +
+                '</svg>'
+        );
+        // CAMELCASE REGISTRATION CONTRACT (sky subset): every map key must
+        // resolve through the LIVE registry under its own camelCase name —
+        // the shell/delegation loop above passes even when a module binds
+        // the WRONG name (its factory looks its own kebab-case registration
+        // up and stays self-consistent), so the registry-identity pin here
+        // is what exposes a kebab-case registration defect. REQUIRED names
+        // per nature/index.ts: crescentMoon/fullMoon/halfMoon/moonCloud/
+        // moonStars — fullMoon/moonCloud/moonStars are currently registered
+        // kebab-case ('full-moon'/'moon-cloud'/'moon-stars') by the sky
+        // production wave and this assertion fails until that is fixed.
+        for (const skyName of ['crescentMoon', 'fullMoon', 'halfMoon', 'moonCloud', 'moonStars']) {
+            expect(svgIcon(skyName)).toBe(svgIcons[skyName]());
+        }
     });
 });

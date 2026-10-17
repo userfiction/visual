@@ -42,3 +42,34 @@ export * from './stars';
 export * from './sunrise';
 export * from './rainbow';
 export * from './lightning';
+// ============================================================================
+// SKY-PRODUCTION: the WEATHER + CELESTIAL wave appends 23 more sky modules
+// after 'lightning' (same append-only contract — builtins.ts and
+// ui/main.ts already list these exact keys in this order; total map 207).
+// Weather first (sunset … umbrella), then the celestial/night-sky block
+// (crescentMoon … aurora). Every module follows the one-file-per-icon
+// pattern above (ICON_* geometry + svg factory + React component).
+// ============================================================================
+export * from './sunset';
+export * from './sun-cloud';
+export * from './moon-cloud';
+export * from './cloud-rain';
+export * from './cloud-drizzle';
+export * from './cloud-snow';
+export * from './cloud-lightning';
+export * from './cloud-wind';
+export * from './fog';
+export * from './wind';
+export * from './tornado';
+export * from './snowflake';
+export * from './raindrop';
+export * from './umbrella';
+export * from './crescent-moon';
+export * from './full-moon';
+export * from './half-moon';
+export * from './moon-stars';
+export * from './shooting-star';
+export * from './constellation';
+export * from './comet';
+export * from './eclipse';
+export * from './aurora';

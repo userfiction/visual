@@ -51,15 +51,21 @@ const SUBSET_NAMES: Array<[string, string[]]> = [
         'Generic',
         ['check', 'close', 'plus', 'minus', 'menu', 'chevronDown', 'chevronUp', 'chevronLeft', 'chevronRight', 'arrowRight', 'play', 'pause', 'stop', 'heart', 'star', 'book', 'bookmark', 'user', 'home', 'pin', 'trash', 'search', 'download'],
     ],
-    ['Fantasy', ['sword', 'axe', 'wand', 'shield', 'potion', 'scroll', 'spellbook', 'crown', 'gem', 'key']],
-    ['Flags', ['flag', 'pennant', 'banner', 'wavingFlag', 'checkeredFlag', 'nordicFlag', 'swallowtailFlag', 'bunting']],
+    // Keep the RPG catalog aligned with src/icons/fantasy/index.ts so new
+    // equipment is discoverable in Fantasy as well as the unfiltered gallery.
+    ['Fantasy', ['sword', 'axe', 'wand', 'shield', 'potion', 'scroll', 'spellbook', 'crown', 'gem', 'key', 'mace', 'vial', 'dagger', 'bow', 'arrow', 'staff', 'spear', 'warhammer', 'helmet', 'armor', 'gauntlet', 'boots', 'ring', 'amulet', 'torch', 'backpack', 'chest', 'coins', 'dice', 'skull']],
+    // Keep expanded flag silhouettes discoverable; order matches flags/index.ts
+    // and src/icons/builtins.ts without changing the existing filter contract.
+    ['Flags', ['flag', 'pennant', 'banner', 'wavingFlag', 'checkeredFlag', 'nordicFlag', 'swallowtailFlag', 'bunting', 'triangularFlag', 'doublePennant', 'forkedFlag', 'roundedFlag', 'tatteredFlag', 'crossedFlags', 'flagGarland', 'windsock', 'flagOnHill', 'victoryFlag', 'stripedFlag', 'crossFlag', 'saltireFlag', 'diamondFlag', 'signalFlag', 'ceremonialBanner']],
     // Match src/icons/animals/index.ts so every new species is discoverable
     // through the Animals filter as well as the unfiltered gallery.
     ['Animals', ['cat', 'dog', 'bird', 'fish', 'rabbit', 'bear', 'dragon', 'snake', 'turtle', 'paw', 'horse', 'lion', 'owl', 'fox', 'whale', 'frog', 'snail', 'penguin', 'butterfly', 'duck', 'elephant', 'giraffe', 'zebra', 'rhinoceros', 'hippopotamus', 'monkey', 'gorilla', 'panda', 'koala', 'kangaroo', 'deer', 'moose', 'wolf', 'tiger', 'cow', 'pig', 'sheep', 'goat', 'camel', 'donkey', 'bat', 'eagle', 'parrot', 'flamingo', 'swan', 'chicken', 'rooster', 'peacock', 'ostrich', 'shark', 'dolphin', 'octopus', 'squid', 'jellyfish', 'crab', 'lobster', 'seahorse', 'crocodile', 'lizard', 'chameleon']],
     ['Fruits', ['apple', 'banana', 'cherry', 'grape', 'orange', 'lemon', 'watermelon', 'pear', 'strawberry', 'peach', 'pineapple', 'kiwi', 'mango', 'avocado', 'blueberry', 'coconut', 'pomegranate', 'plum', 'melon']],
     ['Nature', ['oak', 'pine', 'palm', 'birch', 'maple', 'fir', 'cypress', 'willow', 'appleTree', 'cherryTree', 'redwood', 'spruce', 'bush', 'cactus', 'fern', 'flower', 'tulip', 'sunflower']],
     ['Landscape', ['mountain', 'hills', 'river']],
-    ['Sky', ['sun', 'moon', 'cloud', 'stars', 'sunrise', 'rainbow', 'lightning']],
+    // Weather and celestial variants share the same copy, color and size
+    // controls as the original sky set; geometry lives in icons/nature/.
+    ['Sky', ['sun', 'moon', 'cloud', 'stars', 'sunrise', 'rainbow', 'lightning', 'sunset', 'sunCloud', 'moonCloud', 'cloudRain', 'cloudDrizzle', 'cloudSnow', 'cloudLightning', 'cloudWind', 'fog', 'wind', 'tornado', 'snowflake', 'raindrop', 'umbrella', 'crescentMoon', 'fullMoon', 'halfMoon', 'moonStars', 'shootingStar', 'constellation', 'comet', 'eclipse', 'aurora']],
 ];
 
 // name → subset label lookup (unknown names never filter out of 'All' but
@@ -260,7 +266,8 @@ const renderToolbar = (): void => {
         sizeGroup.appendChild(
             makeSegment(`${size}px`, size === currentSize, () => {
                 currentSize = size;
-                // Full re-render on size change — the grid is cheap (98 cards)
+                // Re-render the filtered grid so every SVG receives the same
+                // size; membership remains driven by the builtins.ts catalog.
                 renderGallery();
                 renderToolbar();
             })

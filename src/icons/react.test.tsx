@@ -23,17 +23,17 @@
  * machinery (IconBase/VisualIcon + IconProps types).
  *
  * IMPORT ORDER: ./builtins is imported FIRST among icon modules — loading
- * the svgIcons map performs the registration side effects for ALL 98
+ * the svgIcons map performs the registration side effects for ALL 168
  * built-ins (builtins.ts pulls the generic/ + fantasy/ + flags/ + animals/
- * + fruits/ + nature/ sub-barrels — 23 generic + 10 fantasy + 8 flags +
- * 20 animals + 19 fruits + 18 nature; react.tsx does no registration of
+ * + fruits/ + nature/ sub-barrels — 23 generic + 30 fantasy + 8 flags +
+ * 60 animals + 19 fruits + 28 nature; react.tsx does no registration of
  * its own), which is what
  * VisualIcon resolves against at render time. LOAD-BEARING: svgIcons must
  * actually be USED
  * below — esbuild elides unused imports in TS files, which would skip the
  * ./builtins module evaluation entirely and leave the registry empty.
  * Assertions here are NAME-specific (per data-icon hook), never count-coupled,
- * so the 33→61→71→92→98 growth needs no assertion changes.
+ * so the 33→61→71→92→98→148→168 growth needs no assertion changes.
  *
  * EXPECTED VALUES: attributes are asserted as exact strings; innerHTML
  * expectations are the hardcoded POST-SERIALIZATION forms of the per-icon
@@ -87,7 +87,15 @@ import { ICON_GEM, GemIcon } from './fantasy/gem';
 // (VISUAL-TESTS-6) back the VisualIcon live-registry round-trips below —
 // names resolvable ONLY through builtins.ts, not a direct import here.
 import { ICON_FLAG, FlagIcon } from './flags/flag';
-import { ICON_CHECKERED_FLAG } from './flags/checkered-flag';
+import { ICON_CHECKERED_FLAG, CheckeredFlagIcon } from './flags/checkered-flag';
+// FLAGS-PRODUCTION React coverage: SaltireFlagIcon pins the TWO-element
+// (evenodd frame + flatPath saltire paint-over) ordering through the shell;
+// CEREMONIAL_BANNER is imported WITHOUT its component and backs the
+// VisualIcon live-registry round-trip (butterfly/checkeredFlag precedent —
+// the flags block sits at builtins offsets 53..76, so its tail resolves
+// ONLY through the builtins.ts side effects).
+import { ICON_SALTIRE_FLAG, SaltireFlagIcon } from './flags/saltire-flag';
+import { ICON_CEREMONIAL_BANNER } from './flags/ceremonial-banner';
 import { ICON_CAT, CatIcon } from './animals/cat';
 // VISUAL-TESTS-4: the reworked/expanded animals set. Owl mixes flatPath
 // holes with TWO literal pupil <circle> elements (the SwordIcon
@@ -140,18 +148,27 @@ const CLOSE_SERIALIZED =
     '<path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z" fill="currentColor" stroke="none"></path>';
 const DOWNLOAD_SERIALIZED =
     '<path d="M11 4h2v8h3l-4 4-4-4h3zM5 18h14v2H5z" fill="currentColor" stroke="none"></path>';
-// Sword = flat path element + literal non-path pommel <circle> (fantasy/sword.ts);
-// BOTH elements appear in the serialized innerHTML, in definition order.
+// Sword (fantasy/sword.ts, FANTASY-REDRAW) = TWO evenodd path elements —
+// the main silhouette (blade with the transparent fuller slot + the two
+// grip-wrap notches) and the pommel RING (outer r 1.5 + r 0.65 hole) as a
+// separate paint-over path (ring/grip overlap 0.4 deep would XOR under a
+// same-path evenodd); BOTH elements appear in the serialized innerHTML, in
+// definition order.
 const SWORD_SERIALIZED =
-    '<path d="M12 1L14.5 5V15H9.5V5ZM6 15H18V17.5H6ZM11 17.5H13V21H11Z" fill="currentColor" stroke="none"></path><circle cx="12" cy="22" r="1.5" fill="currentColor" stroke="none"></circle>';
+    '<path d="M12 1L14.5 5V15H9.5V5ZM11.45 6H12.55V13.9H11.45ZM6 15H18V17.5H6ZM11 17.5H13V21H11ZM11 18.4H13V19H11ZM11 19.8H13V20.4H11Z" fill="currentColor" stroke="none" fill-rule="evenodd"></path><path d="M12 20.6a1.5 1.5 0 1 1 0 3a1.5 1.5 0 1 1 0-3zM12 21.45a0.65 0.65 0 1 0 0 1.3a0.65 0.65 0 1 0 0-1.3z" fill="currentColor" stroke="none" fill-rule="evenodd"></path>';
+// Gem (fantasy/gem.ts, FANTASY-REDRAW): ONE evenodd path — the brilliant
+// silhouette carrying the girdle slot (confined to the silhouette
+// intersection), two crown slots and two pavilion wedges as facet holes.
 const GEM_SERIALIZED =
-    '<path d="M12 21L3 10L6 5H18L21 10Z" fill="currentColor" stroke="none"></path>';
-// ── VISUAL-TESTS-2 new-subset pins (probe-captured from
-// Temp/visual/probe-react2.ts via the same jsdom machinery) ──
-// Flag (flags/flag.ts): pole rect x4..6 y2..22 + attached flag rect x6..19
-// y3..10 as two rect subpaths in ONE flat path — single element, no holes.
+    '<path d="M12 21L3 10L6 5H18L21 10ZM3.24 9.6H20.76L21 10L20.67273 10.4H3.32727L3 10ZM6 5L9 9.6H9.8L6.8 5ZM17.2 5H18L15 9.6H14.2ZM9 10.4H9.8L12 21ZM14.2 10.4H15L12 21Z" fill="currentColor" stroke="none" fill-rule="evenodd"></path>';
+// ── VISUAL-TESTS-2 new-subset pins — UPDATED for the FLAGS-PRODUCTION
+// uplift (hand-derived from flags/flag.ts + the jsdom normalization rules,
+// not probe-captured) ──
+// Flag (flags/flag.ts, uplifted): full-height pole rect x4..6 y1..23 +
+// attached flag rect x6..19→21 y3..14 as two rect subpaths in ONE flat
+// path — single element, no holes.
 const FLAG_SERIALIZED =
-    '<path d="M4 2h2v20H4zM6 3h13v7H6z" fill="currentColor" stroke="none"></path>';
+    '<path d="M4 1h2v22H4zM6 3h15v11H6z" fill="currentColor" stroke="none"></path>';
 // Cat (animals/cat.ts, REWORKED in VISUAL-TESTS-13): the single-silhouette
 // head+ears body carries the inner-ear/eye/nose/ω-mouth holes cut by
 // EXPLICIT fill-rule="evenodd" (source order d, fill, stroke, fill-rule),
@@ -175,11 +192,12 @@ const CAT_SERIALIZED =
 // baseline capture.
 const APPLE_SERIALIZED =
     '<path d="M12 7.4C9.5 5.3 5.8 6.1 4.1 8.8 1.9 12.5 4.2 19.2 7.2 21.4 9.2 22.9 10.5 21.2 12 21.2S14.8 22.9 16.8 21.4C19.8 19.2 22.1 12.5 19.9 8.8 18.2 6.1 14.5 5.3 12 7.4zM6.3 10C5 11.7 5.1 14 5.8 15.4L7 14.9C6.5 13.4 6.6 11.9 7.4 10.8z" fill="currentColor" stroke="none" fill-rule="evenodd"></path><path d="M11.3 7.8C11.1 5.4 11.5 3.5 12.8 1.8L14 2.7C12.9 4.2 12.6 5.8 12.8 7.8zM14 5.2C14.1 2.6 17.1 1.5 20 2.3 18.9 4.9 16.8 6.2 14 5.2z" fill="currentColor" stroke="none"></path>';
-// CheckeredFlag (flags/checkered-flag.ts): pole + flag rect + 14
-// counterclockwise 2×2 checker holes in ONE path — used ONLY by the
-// VisualIcon live-registry round-trip below.
+// CheckeredFlag (flags/checkered-flag.ts, uplifted): pole + flag rect + 16
+// 2×2 checker holes in ONE path cut by the EXPLICIT fill-rule="evenodd"
+// attribute (source order d, fill, stroke, fill-rule) — used by the
+// CheckeredFlagIcon pin AND the VisualIcon live-registry round-trip below.
 const CHECKERED_FLAG_SERIALIZED =
-    '<path d="M3 2h2v20H3zM5 3h14v8H5zM7 3v2h2V3zM11 3v2h2V3zM15 3v2h2V3zM5 5v2h2V5zM9 5v2h2V5zM13 5v2h2V5zM17 5v2h2V5zM7 7v2h2V7zM11 7v2h2V7zM15 7v2h2V7zM5 9v2h2V9zM9 9v2h2V9zM13 9v2h2V9zM17 9v2h2V9z" fill="currentColor" stroke="none"></path>';
+    '<path d="M3 1h2v22H3zM5 3h16v8H5zM7 3v2h2V3zM11 3v2h2V3zM15 3v2h2V3zM19 3v2h2V3zM5 5v2h2V5zM9 5v2h2V5zM13 5v2h2V5zM17 5v2h2V5zM7 7v2h2V7zM11 7v2h2V7zM15 7v2h2V7zM19 7v2h2V7zM5 9v2h2V9zM9 9v2h2V9zM13 9v2h2V9zM17 9v2h2V9z" fill="currentColor" stroke="none" fill-rule="evenodd"></path>';
 // ── VISUAL-TESTS-4 animals pins — VISUAL-TESTS-13 redraw refresh
 // (re-derived from the animals/* source constants + the flatPath template +
 // the jsdom normalization rules and diffed against the live serialization
@@ -324,8 +342,8 @@ describe('VisualIcon (registry-driven render-any)', () => {
         // butterfly has NO direct per-icon component import in this file —
         // it resolves ONLY through the builtins.ts map (imported first), so a
         // pass proves the animals/ sub-barrel registration side effects are
-        // live for VisualIcon at render time. Butterfly sits near the END of
-        // the animals registration order (19th of 20 animals), far from the
+        // live for VisualIcon at render time. Butterfly sits 19th of the
+        // 60 animals, far from the
         // set head, so a registration-order mistake would not pass unnoticed.
         const { container } = render(<VisualIcon name="butterfly" />);
         const el = container.querySelector('svg[data-icon="butterfly"]') as SVGSVGElement;
@@ -341,8 +359,10 @@ describe('VisualIcon (registry-driven render-any)', () => {
         // flower has NO direct per-icon component import in this file — it
         // resolves ONLY through the builtins.ts map (imported first), so a
         // pass proves the nature/ sub-barrel registration side effects are
-        // live for VisualIcon at render time. Flower sits 16th of 18 in the
-        // nature registration order — the expansion added five trees + a
+        // live for VisualIcon at render time. Flower sits 16th of the
+        // 18-name trees/plants block (nature then grew to 28 with the
+        // VISUAL-TESTS-11 landscape + sky subsets appended after
+        // sunflower) — the expansion added five trees + a
         // bush/cactus/fern cluster BEFORE it (oak→fern, VISUAL-TESTS-9),
         // then tulip and sunflower AFTER it, so a registration-order
         // mistake in the middle of the nature set would not pass unnoticed.
@@ -359,10 +379,11 @@ describe('VisualIcon (registry-driven render-any)', () => {
         // tulip has NO direct per-icon component import in this file — it
         // resolves ONLY through the builtins.ts map (imported first), so a
         // pass proves the nature/ sub-barrel registration side effects are
-        // live for VisualIcon at render time. Tulip sits 17th of 18 in the
-        // nature registration order (VISUAL-TESTS-9 expansion), just short
-        // of the set tail, so a late-insertion mistake would not pass
-        // unnoticed.
+        // live for VisualIcon at render time. Tulip sits 17th of the
+        // 18-name trees/plants block (VISUAL-TESTS-9 expansion; the
+        // landscape + sky subsets follow in the 28-name nature set), just
+        // short of the block tail, so a late-insertion mistake would not
+        // pass unnoticed.
         const { container } = render(<VisualIcon name="tulip" />);
         const el = container.querySelector('svg[data-icon="tulip"]') as SVGSVGElement;
         // ONE serialized element (cup bloom + seam holes + stem + leaves +
@@ -402,14 +423,15 @@ describe('per-component spot checks (one file per icon)', () => {
         expect(el.innerHTML).toBe(serialized(ICON_DOWNLOAD));
     });
 
-    it('SwordIcon renders the sword definition including the pommel circle element', () => {
+    it('SwordIcon renders the sword definition including the pommel ring path element', () => {
         const { container } = render(<SwordIcon />);
         const el = container.querySelector('svg[data-icon="sword"]') as SVGSVGElement;
         expect(el).not.toBeNull();
-        // The fantasy geometry is TWO elements (flatPath blade/guard/grip path
-        // + literal pommel <circle>) — both must survive the React shell
-        // (dangerouslySetInnerHTML) and the jsdom serialization intact, in
-        // definition order: path first, circle second.
+        // The fantasy geometry is TWO elements (FANTASY-REDRAW): the
+        // evenodd main silhouette path (blade fuller + grip notches) + the
+        // pommel RING as a separate evenodd path — both must survive the
+        // React shell (dangerouslySetInnerHTML) and the jsdom serialization
+        // intact, in definition order: main path first, pommel ring second.
         expect(el.innerHTML).toBe(SWORD_SERIALIZED);
         expect(el.innerHTML).toBe(serialized(ICON_SWORD));
     });
@@ -508,6 +530,65 @@ describe('per-component spot checks (one file per icon)', () => {
         expect(el.getAttribute('data-icon')).toBe('sunflower');
         expect(el.innerHTML).toBe(SUNFLOWER_SERIALIZED);
         expect(el.innerHTML).toBe(serialized(ICON_SUNFLOWER));
+    });
+});
+
+// ── FLAGS-PRODUCTION React coverage (uplifted flags set) ──
+describe('flags uplift React coverage (FLAGS-PRODUCTION)', () => {
+    it('CheckeredFlagIcon renders the uplifted 16-hole evenodd definition on its machine hook', () => {
+        const { container } = render(<CheckeredFlagIcon />);
+        const el = container.querySelector('svg[data-icon="checkeredFlag"]') as SVGSVGElement;
+        expect(el).not.toBeNull();
+        // Uplifted shell defaults (16px square on the 24×24 grid, flat pair,
+        // decorative a11y) around the pole x3..5 + flag x5..21 y3..11 field
+        // with the SIXTEEN 2×2 checker holes cut by the ONE explicit
+        // fill-rule="evenodd" attribute — exact full-string pin.
+        expect(el.getAttribute('width')).toBe('16');
+        expect(el.getAttribute('height')).toBe('16');
+        expect(el.getAttribute('viewBox')).toBe('0 0 24 24');
+        expect(el.getAttribute('fill')).toBe('currentColor');
+        expect(el.getAttribute('stroke')).toBe('none');
+        expect(el.getAttribute('aria-hidden')).toBe('true');
+        expect(el.getAttribute('focusable')).toBe('false');
+        expect(el.innerHTML).toBe(CHECKERED_FLAG_SERIALIZED);
+        // …and the module constant normalizes to the same exact string
+        expect(el.innerHTML).toBe(serialized(ICON_CHECKERED_FLAG));
+    });
+
+    it('SaltireFlagIcon renders the two-element definition (evenodd frame + flatPath saltire) in definition order', () => {
+        const { container } = render(<SaltireFlagIcon />);
+        const el = container.querySelector('svg[data-icon="saltireFlag"]') as SVGSVGElement;
+        expect(el).not.toBeNull();
+        // TWO serialized <path> elements in definition order (the
+        // SwordIcon multi-element precedent): the evenodd framed field
+        // (border ring with the EXPLICIT inner-rect hole) FIRST, then the
+        // solid flatPath saltire bands painted over it — the paint-over
+        // overlap must UNION across elements, not XOR inside one evenodd.
+        const paths = Array.from(el.querySelectorAll('path'));
+        expect(paths.length).toBe(2);
+        expect(paths[0].getAttribute('d')).toBe('M6 3h14v11H6zM8 5v7h10V5z');
+        expect(paths[0].getAttribute('fill-rule')).toBe('evenodd');
+        expect(paths[1].getAttribute('d')).toBe('M6 3L20 12 20 14 6 5zM20 5L6 14 6 12 20 3z');
+        expect(paths[1].getAttribute('fill-rule')).toBeNull();
+        // Full-serial parity: the shell innerHTML equals the module
+        // constant through the same jsdom machinery.
+        expect(el.innerHTML).toBe(serialized(ICON_SALTIRE_FLAG));
+    });
+
+    it('VisualIcon resolves the flags-block tail (ceremonialBanner) through the live registry', () => {
+        // ceremonialBanner has NO direct per-icon component import in this
+        // file — it resolves ONLY through the builtins.ts map (imported
+        // first), so a pass proves the flags/ sub-barrel registration side
+        // effects cover the block TAIL (offset 76) for VisualIcon at
+        // render time. TWO serialized elements (evenodd body + flatPath
+        // finial balls), exact full-serial pin via the module constant.
+        const { container } = render(<VisualIcon name="ceremonialBanner" />);
+        const el = container.querySelector('svg[data-icon="ceremonialBanner"]') as SVGSVGElement;
+        expect(el).not.toBeNull();
+        expect(el.innerHTML).toBe(serialized(ICON_CEREMONIAL_BANNER));
+        // Cross-layer pin: the registry entry VisualIcon reads produces
+        // the exact same string markup as the builtins.ts factory.
+        expect(svgIcon('ceremonialBanner')).toBe(svgIcons.ceremonialBanner());
     });
 });
 

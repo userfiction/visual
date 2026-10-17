@@ -1,11 +1,11 @@
 /**
- * cloud — SKY icon: puffy cloud.
+ * cloud — SKY icon: puffy cloud (uplift: bolder three-dome + base bar).
  *
- * GEOMETRY: one outline — a flat base bar (x 3.4..20.6 at y 16.4..19)
- * carrying THREE puffs (center dome r 3.9 at (12,10.5), left dome r 3.1
- * at (7.4,12.2), right dome r 3.3 at (16.4,12)) drawn as one clockwise
- * path (each puff is a sweep-1 arc riding the outline, the classic
- * cloud read).
+ * GEOMETRY: union of separate elements (per the overlapping-shapes
+ * convention — see svg-icon.ts flatPath note): two side dome circles
+ * (r 4.2 at (7,13.2), r 3.6 at (17.6,13.6)), a taller center dome
+ * (r 5.2 at (12.6,10.4)) and a solid base bar (x 3.4..20.6, y 15.4..19.6;
+ * top edge 15.4 tucks under every dome bottom ≥15.6 so no notch shows).
  */
 import React from 'react';
 import { createSvgIcon, flatPath } from '../svg-icon';
@@ -13,10 +13,12 @@ import type { SvgIconFactory } from '../svg-icon';
 import { IconBase } from '../react';
 import type { IconProps } from '../react';
 
-export const ICON_CLOUD = flatPath(
-    // cloud outline: base bar + three dome arcs, one clockwise path
-    'M4.4 19a2 2 0 0 1-1-3.7 3.1 3.1 0 0 1 1.9-5 3.9 3.9 0 0 1 7.4-1.4 3.3 3.3 0 0 1 4.6 3.2 3 3 0 0 1 2.3 3.9A2 2 0 0 1 19.6 19z'
-);
+// base bar first, then domes painted over it (same fill → overlap unions)
+export const ICON_CLOUD =
+    flatPath('M3.4 15.4h17.2v4.2H3.4z') +
+    '<circle cx="7" cy="13.2" r="4.2" fill="currentColor" stroke="none"/>' +
+    '<circle cx="12.6" cy="10.4" r="5.2" fill="currentColor" stroke="none"/>' +
+    '<circle cx="17.6" cy="13.6" r="3.6" fill="currentColor" stroke="none"/>';
 
 // String layer: registers 'cloud' in the shared registry + bound factory
 export const svgCloud: SvgIconFactory = createSvgIcon('cloud', ICON_CLOUD);

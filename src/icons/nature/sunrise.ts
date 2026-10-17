@@ -1,13 +1,12 @@
 /**
- * sunrise — SKY icon: sunrise over the horizon (half sun + horizon line +
- * three shine rays).
+ * sunrise — SKY icon: sunrise over the horizon (uplift: bigger sun,
+ * thicker horizon bar, chunkier rays).
  *
- * GEOMETRY: horizon = solid ground bar x 3.4..20.6 spanning y 18.6..20.2;
- * half-sun = a solid half-disc (r 4.6 at (12,18.6), flat side DOWN on
- * the horizon — drawn as its own subpath, arcs sweep-0 through the TOP);
- * rays = three thin solid wedges above the sun (left diagonal, vertical,
- * right diagonal; tips r 8.9, bases r 6.1 — same wedge geometry as the
- * full sun's).
+ * GEOMETRY: half-sun = solid half-disc r 5.4 at (12,19), flat side DOWN on
+ * the horizon (arc sweep-1 through the TOP); horizon bar x 2.4..21.6,
+ * y 19..21.2; three ray wedges above (N vertical bar + NW/NE diagonals,
+ * tips r 9.8, bases r 6.4 off center (12,19) — 9.8·cos45 ≈ 6.93,
+ * 6.4·cos45 ≈ 4.53, half-width ±0.8).
  */
 import React from 'react';
 import { createSvgIcon, flatPath } from '../svg-icon';
@@ -17,13 +16,13 @@ import type { IconProps } from '../react';
 
 export const ICON_SUNRISE = flatPath(
     // half-sun (flat chord on the horizon, arc through the top)
-    'M7.4 18.6a4.6 4.6 0 0 1 9.2 0z' +
-        // rays: left diagonal, vertical, right diagonal (thin wedges)
-        'M5.2 12.4L6.1 11.7 8.3 14.5 7.4 15.2z' +
-        'M11.3 9h1.4v4.6h-1.4z' +
-        'M18.8 12.4L16.6 15.2 15.7 14.5 17.9 11.7z' +
+    'M6.6 19a5.4 5.4 0 0 1 10.8 0z' +
+        // rays: left diagonal wedge, vertical bar, right diagonal wedge
+        'M5.1 12.1L8.04 13.9 6.9 15.04z' +
+        'M11.2 9.2h1.6v3.4h-1.6z' +
+        'M18.9 12.1L15.96 13.9 17.1 15.04z' +
         // horizon bar
-        'M3.4 18.6h17.2v1.6H3.4z'
+        'M2.4 19h19.2v2.2H2.4z'
 );
 
 // String layer: registers 'sunrise' in the shared registry + bound factory

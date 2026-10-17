@@ -1,11 +1,12 @@
 /**
- * lightning — SKY icon: a lightning bolt with a small cloud cap.
+ * lightning — SKY icon: lightning bolt under a storm cloud cap (uplift:
+ * fuller three-dome cap + wider bolt).
  *
- * GEOMETRY: bolt = one solid zigzag polygon (classic double-kink
- * bolt: from the top edge down-left to a mid notch, then to the sharp
- * bottom tip at (10.4,21.8), back up the other side) drawn CLOCKWISE;
- * cloud cap = a small two-dome cloud bar sitting on the bolt's top (the
- * storm cloud the bolt drops from), drawn FIRST so the bolt overlaps it.
+ * GEOMETRY: cloud cap = base bar (x 6..18.8, y 7..9.8) + three dome
+ * circles (r 2.6 at (8.6,7.2), r 3 at (12.6,5.6), r 2.4 at (16.4,7.4));
+ * bolt = one solid zigzag polygon dropping from the cap (top edge
+ * (14,9)→(17,9) tucked 0.8 into the bar, mid notches, sharp tip at
+ * (9.4,21.8)), drawn as its own flatPath element after the cap.
  */
 import React from 'react';
 import { createSvgIcon, flatPath } from '../svg-icon';
@@ -13,13 +14,14 @@ import type { SvgIconFactory } from '../svg-icon';
 import { IconBase } from '../react';
 import type { IconProps } from '../react';
 
-export const ICON_LIGHTNING = flatPath(
-    // storm cloud cap (two domes + base, solid)
-    'M8.2 8.2a2 2 0 0 1 .3-3.4 2.4 2.4 0 0 1 4.5-.9 2.2 2.2 0 0 1 4 1A2 2 0 0 1 18.2 8.2z' +
-        'M7 8.2h12v1.4H7z' +
-        // bolt: zigzag polygon (tip at 10.4,21.8)
-        'M13.6 9.6L8.8 15.4 12.2 15.4 10.4 21.8 16.4 13.8 13 13.8 16.8 9.6z'
-);
+export const ICON_LIGHTNING =
+    // storm cloud cap: bar + three dome circles
+    flatPath('M6 7h12.8v2.8H6z') +
+    '<circle cx="8.6" cy="7.2" r="2.6" fill="currentColor" stroke="none"/>' +
+    '<circle cx="12.6" cy="5.6" r="3" fill="currentColor" stroke="none"/>' +
+    '<circle cx="16.4" cy="7.4" r="2.4" fill="currentColor" stroke="none"/>' +
+    // bolt: zigzag polygon (tip at 9.4,21.8)
+    flatPath('M14 9L8.2 16.4 11.6 16.4 9.4 21.8 16.8 14.6 13.2 14.6 17 9z');
 
 // String layer: registers 'lightning' in the shared registry + bound factory
 export const svgLightning: SvgIconFactory = createSvgIcon('lightning', ICON_LIGHTNING);

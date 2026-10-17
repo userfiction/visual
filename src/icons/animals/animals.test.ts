@@ -1339,14 +1339,16 @@ describe('animals per-module contract', () => {
     });
 
     it('exposes all 60 animals contiguously through builtins, the root barrel and the gallery subset', () => {
-        // BUILTINS ORDER: 23 generic + 10 fantasy + 8 flags = 41 keys precede
-        // the animals block; the 60 animals sit at indices 41..100 in the
-        // animals/index.ts order, followed by the 19 fruits.
+        // BUILTINS ORDER: 23 generic + 30 fantasy + 24 flags = 77 keys
+        // precede the animals block (the FANTASY-REDRAW pass grew the
+        // fantasy block 10 → 30 and REGISTRY-EXPANSION grew flags 8 → 24,
+        // shifting the animals window); the 60 animals sit at indices
+        // 77..137 in the animals/index.ts order, followed by the 19 fruits.
         const keys = Object.keys(svgIcons);
-        expect(keys.length).toBe(41 + 60 + 19 + 18 + 3 + 7);
-        const animalKeys = keys.slice(41, 41 + 60);
+        expect(keys.length).toBe(77 + 60 + 19 + 18 + 3 + 7 + 23);
+        const animalKeys = keys.slice(77, 77 + 60);
         expect(animalKeys).toEqual(ANIMALS.map((animal) => animal.name));
-        expect(keys[41 + 60]).toBe('apple'); // the fruits block starts next
+        expect(keys[77 + 60]).toBe('apple'); // the fruits block starts next
         // Each builtins factory IS the module's own factory (same registry
         // name resolves to the identical string).
         for (const animal of ANIMALS) {
