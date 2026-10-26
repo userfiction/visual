@@ -377,7 +377,13 @@ const expectCardCopyAndToast = async (
     }
 };
 
-describe('ui/main — icon gallery bootstrap (jsdom, fresh shell per test)', () => {
+describe(
+    'ui/main — icon gallery bootstrap (jsdom, fresh shell per test)',
+    // Suite-level timeout ceiling: the gallery tests boot the whole demo and
+    // render up to 207 cards per test; under a parallel turbo run a single
+    // test regularly exceeds vitest's default 5s testTimeout.
+    { timeout: 60_000 },
+    () => {
     // Fake-timer hygiene: force real timers before AND after every test so a
     // failure mid-test can never leak vi.useFakeTimers into a sibling test.
     // The matchMedia shim is (re)installed before every test so the module's
