@@ -1,29 +1,26 @@
 // ============================================================================
-// vite.config.ts — Vite config for @userfiction/visual (npm-publishable
-// library build).
+// vite.config.ts — Vite config for @userfiction/visual.
 // ============================================================================
-// - Library mode, ESM-only output `dist/userfiction-visual.mjs` — matches the
-//   `exports.import` condition in package.json (consumed by external npm
-//   users; workspace dev keeps resolving TS source via the `development`
-//   condition, the same split as @userfiction/combat / inventory / reader).
-// - BUNDLED (not external): @presource/core. It is a raw-TS package on npm
-//   (main -> src/*.ts, no usable dist for plain Node — proven for the sibling
-//   packages, see @userfiction/reader/vite.config.ts), so an external import
-//   would fail in plain Node. Vite transpiles its TS during bundling, so the
-//   published JS is self-contained. It REMAINS declared as a dependency for
-//   provenance honesty + type resolution.
-// - EXTERNAL: react (declared as peerDependencies ^18.2.0 — the tested React
-//   18 line only, React 19 untested and not claimed — so the host app
-//   provides ONE React copy; also in devDependencies for local tests). The
-//   pattern /^react(-dom)?(\/|$)/ mirrors @userfiction/reader so a future
-//   react-dom import stays external too.
-// - TEST: this file also shadows the root vitest config when vitest runs with
-//   this package as cwd (package.json "test": "vitest run"), so the root's
-//   test settings (jsdom + globals) are mirrored here — same shadow pattern
-//   as every other @userfiction package.
+// SOURCE-ONLY LIBRARY (repo policy: AGENTS.md "Runtime / runner policy" (c)):
+// this package publishes TypeScript from source — package.json main/module/
+// types/exports all point at ./src/index.ts, so there is NO library build here
+// and no dist/ output. Consumers are Vite-based and compile/roll up the TS from
+// node_modules themselves, which also removes the old reason for BUNDLING the
+// raw-TS dependency (@presource/core) into a published .mjs: a Vite consumer
+// transpiles it from its own src/index.ts like it transpiles this package. It
+// REMAINS a declared dependency (provenance honesty + type resolution); react
+// stays host-provided via peerDependencies ^18.2.0 (the tested React 18 line
+// only) so the app carries ONE React copy.
+// The UI showcase (ui/) is a DEPLOYABLE app surface, NOT a library build: it
+// keeps its own Vite config + dist output via "ui:dev" / "ui:build" /
+// "ui:preview" -> ui/vite.config.ts (standalone; it does not extend this file)
+// and is excluded from the published "files" list.
+// - TEST: this file is the vitest config when vitest runs with this package as
+//   cwd (package.json "test": "vitest run"), so the root's test settings
+//   (jsdom + globals) are mirrored here — same shadow pattern as every other
+//   @userfiction package.
 // ============================================================================
 import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
 
 export default defineConfig({
     test: {
@@ -33,23 +30,5 @@ export default defineConfig({
         globals: true,
         include: ['**/*.{test,spec}.{ts,tsx,js,jsx}'],
         passWithNoTests: true,
-    },
-    build: {
-        lib: {
-            entry: resolve(__dirname, 'index.ts'),
-            name: 'userfiction-visual',
-            formats: ['es'],
-            fileName: () => 'userfiction-visual.mjs',
-        },
-        rollupOptions: {
-            // Only published-JS runtimes stay external; the raw-TS internal
-            // dependency (@presource/core) is bundled (see header comment)
-            external: [/^node:/, /^react(-dom)?(\/|$)/],
-            output: {
-                globals: {},
-            },
-        },
-        sourcemap: true,
-        emptyOutDir: true,
     },
 });

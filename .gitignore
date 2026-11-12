@@ -26,3 +26,8 @@ yarn-error.log*
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Agent scratch space (see root AGENTS.md) - never commit. This package is its own
+# git repo, so the root repo's `/Temp/` rule does not reach it: without this entry
+# a probe file under Temp/ shows up as untracked dirt in `git status` here.
+/Temp/

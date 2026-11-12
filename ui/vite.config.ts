@@ -13,9 +13,11 @@
 //   config.
 // - Build lands in ui/dist (permitted package path, gitignored), sourcemapped,
 //   mirroring the library build's sourcemap/emptyOutDir choices.
-// - The UI is NOT part of the npm package: excluded from package.json
-//   "files" and tsconfig.build.json; it is built and published to GitHub
-//   Pages by .github/workflows/deploy-visual-ui.yml.
+// - The UI is NOT part of the npm package: kept out of the published tarball by
+//   the package.json "files" globs, which exclude the "ui" directory (the
+//   package publishes TypeScript source from src/ only, so there is no separate
+//   build project to exclude it from either); it is built and published to
+//   GitHub Pages by .github/workflows/deploy-visual-ui.yml.
 // - No backend, no fetch: this is a pure static app. (localStorage is used
 //   by the showcase for theme/color preference persistence — client-side
 //   only, nothing external.)

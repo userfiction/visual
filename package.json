@@ -3,25 +3,28 @@
     "version": "1.0.2",
     "description": "Visual assets for User Fiction — flat-design SVG icons (generic + fantasy sets), string and React layers",
     "type": "module",
-    "main": "./dist/userfiction-visual.mjs",
-    "module": "./dist/userfiction-visual.mjs",
-    "types": "dist/index.d.ts",
+    "main": "./src/index.ts",
+    "module": "./src/index.ts",
+    "types": "./src/index.ts",
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
-            "development": "./index.ts",
-            "import": "./dist/userfiction-visual.mjs"
+            "types": "./src/index.ts",
+            "default": "./src/index.ts"
         }
     },
     "files": [
-        "dist",
         "index.ts",
+        "src",
         "**/*.ts",
         "**/*.tsx",
         "!**/*.test.ts",
         "!**/*.test.tsx",
         "!vite.config.ts",
-        "!ui"
+        "!ui",
+        "!vitest.config.ts",
+        "!**/*.d.ts",
+        "!Temp/**",
+        "!coverage/**"
     ],
     "sideEffects": false,
     "publishConfig": {
@@ -29,8 +32,6 @@
         "registry": "https://registry.npmjs.org"
     },
     "scripts": {
-        "build": "vite build && tsc -p tsconfig.build.json",
-        "prepack": "npm run build",
         "test": "vitest run",
         "typecheck": "tsc --noEmit",
         "ui:dev": "vite --config ui/vite.config.ts",

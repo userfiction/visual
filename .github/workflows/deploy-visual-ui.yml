@@ -9,8 +9,10 @@
 # the noobscript workspace root.
 #
 # SCOPE: the UI showcase (ui/) is NOT part of the npm package
-# (@userfiction/visual ships the icon library — src/ + built dist/ — and ui/
-# is excluded from package.json "files" and tsconfig.build.json). This
+# (@userfiction/visual ships the icon library as TypeScript SOURCE from src/ —
+# there is no built dist/ any more — and ui/ is kept out of the published
+# tarball by the package.json "files" globs, which exclude the "ui" directory).
+# This
 # workflow ONLY builds and publishes the UI; publishing to npm happens
 # separately via the package's `release` script (scripts/publish-safe.ts).
 #
